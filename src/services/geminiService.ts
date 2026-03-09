@@ -1,0 +1,136 @@
+import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
+
+const apiKey = (typeof process !== 'undefined' && process.env.GEMINI_API_KEY) || (import.meta as any).env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.warn("GEMINI_API_KEY is not set. AI features will not work correctly. Please set GEMINI_API_KEY in your environment variables.");
+}
+
+const ai = new GoogleGenAI({ apiKey: apiKey || "" });
+
+export const isApiKeySet = !!apiKey;
+
+const SYSTEM_INSTRUCTION = `أنت المساعد الذكي الرسمي لمجموعة مستشفيات رؤية لطب وجراحة العيون والشبكية. 
+مهمتك هي الإجابة على استفسارات المرضى حول صحة العيون، جراحات الشبكية، الليزك، والمياه البيضاء، وتزويدهم بمعلومات الفروع والتواصل الصحيحة.
+
+فروعنا ومعلومات التواصل:
+1. المركز الرئيسي - رؤية سيئون: حضرموت، شارع الجزائر، مقابل مركز غسيل الكلى. هاتف: [05-408993](tel:05408993) / [05-441177](tel:05441177)، واتساب: [774441177](https://wa.me/967774441177). الموقع: [خرائط جوجل](https://www.google.com/maps?q=رؤية+لطب+وجراحة+العيون+والشبكية+سيئون)
+2. رؤية عدن: المنصورة، شارع السنافر، بجانب بريد القاهرة. هاتف: [02-388150](tel:02388150) / [02-388151](tel:02388151)، واتساب: [782255557](https://wa.me/967782255557). الموقع: [خرائط جوجل](https://www.google.com/maps?q=رؤية+لطب+وجراحة+العيون+والشبكية+عدن)
+3. رؤية المكلا: الديس، الإشارة، بجانب مؤسسة الشامي. هاتف: [05-310888](tel:05310888)، واتساب: [778844766](https://wa.me/967778844766) / [730009097](https://wa.me/967730009097). الموقع: [خرائط جوجل](https://www.google.com/maps?q=رؤية+لطب+وجراحة+العيون+والشبكية+المكلا)
+4. رؤية الشحر: حي المنصورة، بجوار مدارس التفوق. واتساب: [781765720](https://wa.me/967781765720) / [781765257](https://wa.me/967781765257). الموقع: [خرائط جوجل](https://www.google.com/maps?q=رؤية+لطب+وجراحة+العيون+والشبكية+الشحر)
+
+مواعيد الدوام: جميع الأيام ما عدا الجمعة. الفترة الصباحية (8:30 ص - 1:30 ظ)، الفترة المسائية (4:30 م - 8:30 م). ملاحظة: لا توجد فترة مسائية يوم الخميس في فروع عدن والمكلا والشحر.
+
+تعليمات هامة:
+1. إذا ذكر المستخدم اسمه، رحب به باسمه بحرارة وبشكل شخصي في بداية الرد.
+2. كن دائماً مهذباً، ودوداً، وقم بشكر المستخدم على ثقته بمستشفيات رؤية.
+3. إذا سأل المستخدم عن تشخيص لحالة عينه أو طلب فحصاً أو ذكر أعراضاً بصرية، وجهه لاستخدام ميزة "الفحص الذكي (AI Scan)" المتوفرة في البرنامج، حيث يمكنه رفع صورة لعينه والحصول على تقييم أولي وقياس للنظر.
+4. استخدم وظيفة 'navigateToScan' عندما تقترح على المستخدم إجراء الفحص الذكي.
+5. يجب أن تكون إجاباتك طبية، دقيقة، ودودة، وباللغة العربية.
+6. عند ذكر أرقام الهواتف أو الواتساب، استخدم صيغة الروابط المذكورة أعلاه دائماً.
+7. دائماً ذكر المستخدم أن هذه المعلومات استرشادية ولا تغني عن زيارة الطبيب المختص في المستشفى.
+8. تحدث عن خدمات مستشفى رؤية بمهنية وفخر، واحرص على استخدام كلمات مفتاحية طبية دقيقة (مثل: جراحة الشبكية، الليزك، المياه البيضاء، تصحيح النظر) لتعزيز الوعي الطبي.`;
+
+const navigateToScanTool: FunctionDeclaration = {
+  name: "navigateToScan",
+  description: "توجيه المستخدم إلى صفحة الفحص الذكي (AI Scan) لرفع صورة العين وتحليلها.",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {},
+  },
+};
+
+export async function generateMedicalResponse(prompt: string) {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        tools: [{ functionDeclarations: [navigateToScanTool] }]
+      }
+    });
+
+    // Check for function calls
+    if (response.functionCalls) {
+      const call = response.functionCalls.find(f => f.name === "navigateToScan");
+      if (call) {
+        return {
+          text: response.text || "حسناً، سأقوم بتوجيهك الآن إلى صفحة الفحص الذكي لرفع صورة عينك وتحليلها.",
+          action: "NAVIGATE_TO_SCAN"
+        };
+      }
+    }
+
+    return {
+      text: response.text || "عذراً، لم أتمكن من الحصول على إجابة حالياً. يرجى المحاولة مرة أخرى.",
+      action: null
+    };
+  } catch (error) {
+    console.error("Error generating medical response:", error);
+    return {
+      text: "عذراً، حدث خطأ غير متوقع أثناء الاتصال بخدمات الذكاء الاصطناعي. يرجى التأكد من جودة اتصالك بالإنترنت أو المحاولة لاحقاً.",
+      action: null
+    };
+  }
+}
+
+export async function analyzeEyeImage(imageData: string, userInfo: { name: string, age: string, chronicDiseases: string }) {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [
+        {
+          inlineData: {
+            mimeType: "image/jpeg",
+            data: imageData.split(',')[1],
+          },
+        },
+        {
+          text: `بصفتك خبيراً في طب وجراحة العيون في مستشفيات رؤية، قم بتحليل هذه الصورة للعين.
+          المريض: ${userInfo.name}، العمر: ${userInfo.age}، الأمراض المزمنة: ${userInfo.chronicDiseases || 'لا يوجد'}.
+          
+          المطلوب:
+          1. تحديد أجزاء العين الظاهرة في الصورة (مثل القرنية، القزحية، الملتحمة، إلخ).
+          2. تحديد أي إصابات أو أعراض ظاهرة (مثل احمرار، مياه بيضاء، التهاب، إلخ).
+          3. تقديم تقرير طبي مفصل باللغة العربية يتضمن التشخيص الأولي (الاسترشادي).
+          4. تقديم نصائح طبية أولية.
+          5. التأكيد على ضرورة زيارة أقرب فرع لمستشفيات رؤية للفحص السريري.
+          
+          يجب أن يكون الرد بتنسيق JSON يحتوي على الحقول المطلوبة.`
+        }
+      ],
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            diagnosis: { type: Type.STRING },
+            eyeParts: { type: Type.ARRAY, items: { type: Type.STRING } },
+            symptoms: { type: Type.ARRAY, items: { type: Type.STRING } },
+            recommendations: { type: Type.ARRAY, items: { type: Type.STRING } },
+            urgency: { type: Type.STRING },
+            detailedReport: { type: Type.STRING }
+          },
+          required: ["diagnosis", "eyeParts", "symptoms", "recommendations", "urgency", "detailedReport"]
+        }
+      }
+    });
+    
+    const text = response.text;
+    if (!text) throw new Error("Empty response from AI");
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Error analyzing eye image:", error);
+    throw new Error("عذراً، حدث خطأ أثناء تحليل الصورة. يرجى التأكد من جودة الاتصال أو المحاولة لاحقاً.");
+  }
+}
+
+export async function startChat() {
+  return ai.chats.create({
+    model: "gemini-3-flash-preview",
+    config: {
+      systemInstruction: SYSTEM_INSTRUCTION,
+    },
+  });
+}
