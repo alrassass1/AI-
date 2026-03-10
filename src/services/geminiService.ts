@@ -1,11 +1,19 @@
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 
 const getApiKey = () => {
+  const isPlaceholder = (key: string) => {
+    return !key || 
+           key.includes('MY_GEMINI') || 
+           key.includes('YOUR_API_KEY') || 
+           key.includes('process.env') || 
+           key.length < 20;
+  };
+
   // 1. Try process.env (Vite define replacement)
   try {
     // @ts-ignore
     const key = process.env.GEMINI_API_KEY;
-    if (key && typeof key === 'string' && key.length > 10 && !key.includes('process.env')) {
+    if (key && typeof key === 'string' && !isPlaceholder(key)) {
       return key;
     }
   } catch (e) {}
@@ -13,21 +21,24 @@ const getApiKey = () => {
   // 2. Try import.meta.env
   try {
     const metaKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
-    if (metaKey && typeof metaKey === 'string' && metaKey.length > 10) {
+    if (metaKey && typeof metaKey === 'string' && !isPlaceholder(metaKey)) {
       return metaKey;
     }
   } catch (e) {}
 
   // 3. Hardcoded fallback (as requested by user)
+  // Using the key provided by the user: AIzaSyAoBkCpf8Ytbcwblp6xXZ4Vz6kX6k4tFOM
   const hardcodedKey = "AIzaSyAoBkCpf8Ytbcwblp6xXZ4Vz6kX6k4tFOM";
-  if (hardcodedKey && hardcodedKey.length > 10 && !hardcodedKey.includes("AIzaSy...")) {
+  if (hardcodedKey && !isPlaceholder(hardcodedKey)) {
     return hardcodedKey;
   }
 
   return "";
 };
 
-export const isApiKeySet = !!getApiKey();
+export const isApiKeySet = !!getApiKey() && getApiKey().length > 20;
+
+// No official URL needed for production standalone
 
 // Helper to get AI instance with current key
 const getAI = () => {
@@ -65,6 +76,36 @@ const navigateToScanTool: FunctionDeclaration = {
   },
 };
 
+const LOCAL_KNOWLEDGE: Record<string, string> = {
+  "مواعيد": "مواعيد الدوام في مستشفيات رؤية هي من السبت إلى الخميس. الفترة الصباحية: 8:30 ص - 1:30 ظ، والفترة المسائية: 4:30 م - 8:30 م. (ملاحظة: لا توجد فترة مسائية يوم الخميس في فروع عدن والمكلا والشحر).",
+  "فروع": "لدينا 4 فروع رئيسية: \n1. سيئون (المركز الرئيسي): 05-408993\n2. عدن: 02-388150\n3. المكلا: 05-310888\n4. الشحر: 781765720",
+  "ليزك": "نقدم أحدث تقنيات الليزك وتصحيح النظر في مستشفيات رؤية بأيدي أمهر الأطباء. يمكنك حجز موعد للفحص الأولي للتأكد من ملاءمة العملية لعينيك.",
+  "مياه بيضاء": "تجري مستشفيات رؤية عمليات إزالة المياه البيضاء (الفاكو) وزراعة أحدث أنواع العدسات بتقنيات متطورة ونسب نجاح عالية جداً.",
+  "شبكية": "نحن متخصصون في جراحة الشبكية والجسم الزجاجي، ونمتلك أحدث الأجهزة لتشخيص وعلاج اعتلال الشبكية السكري وانفصال الشبكية.",
+  "حجز": "يمكنك حجز موعد عبر الاتصال المباشر بأرقام الفروع أو عبر الواتساب الموضح في قسم 'فروعنا'. كما يمكنك استخدام ميزة 'الفحص الذكي' في هذا البرنامج.",
+  "فحص": "ميزة الفحص الذكي (AI Scan) تتيح لك رفع صورة لعينك والحصول على تقييم أولي استرشادي. يمكنك الوصول إليها من القائمة الجانبية.",
+  "من أنتم": "نحن مجموعة مستشفيات رؤية لطب وجراحة العيون والشبكية، نسعى لتقديم أرقى الخدمات الطبية في مجال العيون في اليمن باستخدام أحدث التقنيات العالمية.",
+  "أسعار": "تختلف الأسعار حسب نوع الخدمة والفرع. يرجى التواصل مع أقرب فرع لك للحصول على قائمة الأسعار الحالية أو حجز موعد للمعاينة.",
+  "تواصل": "يمكنك التواصل معنا عبر أرقام الهواتف المذكورة في قسم الفروع، أو عبر الواتساب، أو من خلال صفحاتنا على وسائل التواصل الاجتماعي.",
+  "أسئلة": "الأسئلة الشائعة تشمل: مواعيد الدوام، الفروع المتوفرة، خدمات الليزك والمياه البيضاء، وكيفية حجز المواعيد. يمكنك سؤال المساعد عن أي من هذه المواضيع.",
+  "شكراً": "عفواً! نحن في مستشفيات رؤية دائماً في خدمتكم. هل لديك أي استفسار آخر؟",
+  "مرحبا": "أهلاً بك! أنا مساعد مستشفيات رؤية الذكي. كيف يمكنني مساعدتك اليوم؟",
+  "سلام": "وعليكم السلام ورحمة الله وبركاته! كيف يمكنني مساعدتك اليوم في مستشفيات رؤية؟",
+  "صباح": "صباح الخير! نحن في مستشفيات رؤية نتمنى لك يوماً سعيداً. كيف يمكننا مساعدتك؟",
+  "مساء": "مساء الخير! كيف يمكن لمساعد مستشفيات رؤية الذكي خدمتك اليوم؟",
+  "من انت": "أنا المساعد الطبي الذكي لمجموعة مستشفيات رؤية، متخصص في تقديم المعلومات الطبية الأولية وتوجيه المرضى.",
+  "عملية": "تجري مستشفيات رؤية مجموعة واسعة من العمليات الجراحية المتقدمة للعيون والشبكية باستخدام أحدث التقنيات. يرجى حجز موعد للمعاينة وتحديد نوع العملية المناسبة.",
+  "نظارة": "نقدم خدمات فحص النظر وتجهيز النظارات الطبية والعدسات اللاصقة في فروعنا. يمكنك استخدام ميزة 'الفحص الذكي' للحصول على قياس تقريبي أولي."
+};
+
+function getLocalResponse(prompt: string): string | null {
+  const p = prompt.toLowerCase();
+  for (const key in LOCAL_KNOWLEDGE) {
+    if (p.includes(key)) return LOCAL_KNOWLEDGE[key];
+  }
+  return null;
+}
+
 export async function generateMedicalResponse(prompt: string) {
   try {
     const ai = getAI();
@@ -94,10 +135,20 @@ export async function generateMedicalResponse(prompt: string) {
     };
   } catch (error: any) {
     console.error("Error generating medical response:", error);
-    const message = error?.message || "";
-    if (message.includes("API_KEY_INVALID") || message.includes("403")) {
+    
+    // Try local fallback first on error
+    const localResponse = getLocalResponse(prompt);
+    if (localResponse) {
       return {
-        text: `عذراً، يبدو أن هناك مشكلة في مفتاح البرمجة (API Key) الخاص بالذكاء الاصطناعي. يرجى التأكد من تفعيل "Generative Language API" للمفتاح المستخدم: ${getApiKey().substring(0, 6)}...`,
+        text: localResponse + "\n\n(ملاحظة: هذا الرد من قاعدة البيانات المحلية نظراً لتعذر الاتصال بالذكاء الاصطناعي حالياً).",
+        action: null
+      };
+    }
+
+    const message = error?.message || "";
+    if (message.includes("API_KEY_INVALID") || message.includes("403") || !getApiKey()) {
+      return {
+        text: `عذراً، يبدو أن هناك مشكلة في تفعيل خدمات الذكاء الاصطناعي. يرجى التأكد من إعدادات مفتاح البرمجة (API Key) في بيئة الاستضافة الخاصة بك.`,
         action: null
       };
     }
@@ -159,8 +210,8 @@ export async function analyzeEyeImage(imageData: string, userInfo: { name: strin
   } catch (error: any) {
     console.error("Error analyzing eye image:", error);
     const message = error?.message || "";
-    if (message.includes("API_KEY_INVALID") || message.includes("403")) {
-      throw new Error("عذراً، مفتاح البرمجة (API Key) غير صالح. يرجى التأكد من إعدادات البرنامج.");
+    if (message.includes("API_KEY_INVALID") || message.includes("403") || !getApiKey()) {
+      throw new Error(`عذراً، مفتاح البرمجة (API Key) غير صالح أو غير مفعل. يرجى التأكد من إعدادات المفتاح.`);
     }
     throw new Error("عذراً، حدث خطأ أثناء تحليل الصورة. يرجى التأكد من جودة الاتصال أو المحاولة لاحقاً.");
   }

@@ -146,12 +146,24 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
     try {
       const element = reportRef.current;
       
-      // Use higher scale for better quality
+      // Ensure all images are loaded before capturing
+      const images = element.getElementsByTagName('img');
+      await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+      }));
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: -window.scrollY,
         windowWidth: element.scrollWidth,
         windowHeight: element.scrollHeight
       });
@@ -161,20 +173,21 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      // If report is longer than one page, we might need to handle it, 
-      // but for now let's ensure it fits or scales.
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Roaya_Report_${userInfo.name}_${fileNumber}.pdf`);
+      pdf.save(`Roaya_Report_${userInfo.name || 'Patient'}_${fileNumber}.pdf`);
     } catch (error) {
       console.error('PDF generation failed', error);
-      alert('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى أو استخدام خيار الطباعة.');
+      alert('عذراً، فشل تحميل ملف PDF. يرجى استخدام خيار "طباعة التقرير" بدلاً من ذلك، حيث أنه أكثر توافقاً مع اللغة العربية.');
     } finally {
       setIsGeneratingPdf(false);
     }
   };
 
   const printReport = () => {
-    window.print();
+    // Small delay to ensure UI is ready
+    setTimeout(() => {
+      window.print();
+    }, 100);
   };
 
   const sendToWhatsApp = () => {

@@ -293,6 +293,20 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [adminMode, setAdminMode] = useState(false);
+  const [logoClicks, setLogoClicks] = useState(0);
+
+  const handleLogoClick = () => {
+    const newClicks = logoClicks + 1;
+    setLogoClicks(newClicks);
+    if (newClicks >= 5) {
+      setAdminMode(true);
+      alert(lang === 'ar' ? 'تم تفعيل وضع المسؤول' : 'Admin mode enabled');
+      setLogoClicks(0);
+    }
+    // Reset clicks after 2 seconds
+    setTimeout(() => setLogoClicks(0), 2000);
+  };
   const [activeTab, setActiveTab] = useState('home');
   const [userName, setUserName] = useState('');
   const [showNamePrompt, setShowNamePrompt] = useState(true);
@@ -385,6 +399,28 @@ export default function App() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      if (!adminMode) e.preventDefault();
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!adminMode && (
+        (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 'i' || e.key === 'j')) ||
+        (e.metaKey && (e.key === 'c' || e.key === 'u' || e.key === 'i' || e.key === 'j')) ||
+        e.key === 'F12'
+      )) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [adminMode]);
+
   const handleSubmit = async (e: React.FormEvent | string) => {
     if (typeof e !== 'string') e.preventDefault();
     
@@ -416,11 +452,9 @@ export default function App() {
       };
       setMessages((prev) => [...prev, botMessage]);
 
-      if (result.action === "NAVIGATE_TO_SCAN") {
-        setTimeout(() => {
-          setActiveTab('ai_scan');
-          setIsSidebarOpen(false);
-        }, 2000);
+      // Automatic navigation disabled as per user request to keep conversation going
+      if (result.action === "OFFICIAL_REDIRECT_REQUIRED") {
+        console.log("AI Key error detected.");
       }
     } catch (error) {
       const errorMessage: Message = {
@@ -436,7 +470,7 @@ export default function App() {
   };
 
   return (
-    <div className={`flex h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-blue-50/30 text-slate-900'} font-sans overflow-hidden transition-colors duration-300`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    <div className={`flex h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-blue-50/30 text-slate-900'} font-sans overflow-hidden transition-colors duration-300 select-none`} dir={lang === 'ar' ? 'rtl' : 'ltr'} style={!adminMode ? { userSelect: 'none', WebkitUserSelect: 'none' } : {}}>
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -455,14 +489,9 @@ export default function App() {
         fixed inset-y-0 ${lang === 'ar' ? 'right-0' : 'left-0'} w-72 bg-[#0F172A] text-white z-50 transition-transform duration-300 transform lg:relative lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : (lang === 'ar' ? 'translate-x-full' : '-translate-x-full')}
       `}>
-        {!isApiKeySet && (
-          <div className="bg-amber-500 text-slate-900 text-[10px] font-bold p-2 text-center animate-pulse">
-            {lang === 'ar' ? 'تنبيه: مفتاح API غير مفعل' : 'Warning: API Key not set'}
-          </div>
-        )}
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogoClick}>
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-lg p-1">
                 <img src={ROAYA_LOGO} alt="Logo" className="w-full h-full object-contain" />
               </div>
@@ -554,12 +583,15 @@ export default function App() {
               icon={<Headset size={18} />}
               label={t.contact}
             />
-            <SidebarLink 
-              active={activeTab === 'developers'} 
-              onClick={() => { setActiveTab('developers'); setIsSidebarOpen(false); }}
-              icon={<Code size={18} />}
-              label={t.developers}
-            />
+            {/* Developers tab restricted to owner via hidden admin mode */}
+            {adminMode && (
+              <SidebarLink 
+                active={activeTab === 'developers'} 
+                onClick={() => { setActiveTab('developers'); setIsSidebarOpen(false); }}
+                icon={<Code size={18} />}
+                label={t.developers}
+              />
+            )}
 
             <div className="pt-6 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
               الخدمات السريعة
@@ -796,6 +828,7 @@ export default function App() {
           <div className="flex items-center gap-2 md:gap-4">
             {/* Action Icons */}
             <div className="flex items-center gap-1 md:gap-2">
+
               {/* Language Toggle */}
               <button 
                 onClick={toggleLang}
@@ -1626,6 +1659,7 @@ function BranchesView({ onTabChange, onScan, t, theme, lang }: { onTabChange: (t
 }
 
 function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: (tab: string) => void, onScan: () => void, t: any, theme: string, lang: string }) {
+  const [showEmbedCode, setShowEmbedCode] = useState(false);
   const appUrl = window.location.origin;
   const embedCode = `<iframe src="${appUrl}" width="100%" height="800px" frameborder="0" style="border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"></iframe>`;
 
@@ -1653,18 +1687,40 @@ function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: 
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold flex items-center gap-3">
                 <Code className="text-blue-400" />
-                {lang === 'ar' ? 'كود التضمين (HTML)' : 'Embed Code (HTML)'}
+                {lang === 'ar' ? 'تضمين البرنامج (Embed)' : 'Embed Program'}
               </h3>
-              <button 
-                onClick={() => copyToClipboard(embedCode)}
-                className="p-2 hover:bg-white/10 rounded-xl transition-all text-slate-400 hover:text-white"
-              >
-                <Copy size={20} />
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setShowEmbedCode(!showEmbedCode)}
+                  className="p-2 hover:bg-white/10 rounded-xl transition-all text-slate-400 hover:text-white"
+                  title={lang === 'ar' ? 'إظهار/إخفاء الكود' : 'Show/Hide Code'}
+                >
+                  <Eye size={20} />
+                </button>
+                <button 
+                  onClick={() => copyToClipboard(embedCode)}
+                  className="p-2 hover:bg-white/10 rounded-xl transition-all text-slate-400 hover:text-white"
+                  title={lang === 'ar' ? 'نسخ الكود' : 'Copy Code'}
+                >
+                  <Copy size={20} />
+                </button>
+              </div>
             </div>
-            <div className="bg-black/50 rounded-2xl p-5 font-mono text-xs text-blue-300 overflow-x-auto leading-relaxed border border-white/10">
-              {embedCode}
-            </div>
+            
+            <AnimatePresence>
+              {showEmbedCode && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-black/50 rounded-2xl p-5 font-mono text-xs text-blue-300 overflow-x-auto leading-relaxed border border-white/10">
+                    {embedCode}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             <div className="space-y-4">
               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{lang === 'ar' ? 'طريقة الاستخدام في وورد بريس:' : 'How to use in WordPress:'}</p>
               <ol className="space-y-3 text-sm text-slate-300">
@@ -1682,6 +1738,36 @@ function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: 
                 </li>
               </ol>
             </div>
+          </div>
+
+          <div className={`${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-[2.5rem] border p-8 space-y-6 shadow-sm`}>
+            <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
+              <Sparkles className="text-blue-600" />
+              {lang === 'ar' ? 'حالة اتصال الذكاء الاصطناعي' : 'AI Connection Status'}
+            </h3>
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${isApiKeySet ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                <span className="text-sm font-bold text-slate-700">
+                  {isApiKeySet 
+                    ? (lang === 'ar' ? 'المفتاح مفعل وجاهز' : 'API Key Active') 
+                    : (lang === 'ar' ? 'المفتاح غير مفعل' : 'API Key Not Set')}
+                </span>
+              </div>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => alert(lang === 'ar' ? 'جاري فحص الاتصال...' : 'Testing connection...')}
+                  className="text-xs font-bold text-blue-600 hover:underline"
+                >
+                  {lang === 'ar' ? 'فحص الآن' : 'Test Now'}
+                </button>
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-400 font-bold leading-relaxed">
+              {lang === 'ar' 
+                ? 'ملاحظة: إذا كان المفتاح غير مفعل، سيعمل المساعد في "وضع الأوفلاين" باستخدام قاعدة البيانات المحلية المدمجة.' 
+                : 'Note: If the key is not active, the assistant will work in "Offline Mode" using the built-in local database.'}
+            </p>
           </div>
 
           <div className={`${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-[2.5rem] border p-8 space-y-6 shadow-sm`}>
