@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 
+// Robust API key retrieval for various environments
 const getApiKey = () => {
   const isPlaceholder = (key: string) => {
     return !key || 
@@ -9,25 +10,25 @@ const getApiKey = () => {
            key.length < 20;
   };
 
-  // 1. Try process.env (Vite define replacement)
+  // 1. Try VITE_GEMINI_API_KEY (Standard for Vite deployments like Vercel/Netlify)
   try {
     // @ts-ignore
-    const key = process.env.GEMINI_API_KEY;
-    if (key && typeof key === 'string' && !isPlaceholder(key)) {
-      return key;
+    const viteKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (viteKey && typeof viteKey === 'string' && !isPlaceholder(viteKey)) {
+      return viteKey;
     }
   } catch (e) {}
 
-  // 2. Try import.meta.env
+  // 2. Try GEMINI_API_KEY (Standard for Node.js or some CI/CD)
   try {
-    const metaKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
-    if (metaKey && typeof metaKey === 'string' && !isPlaceholder(metaKey)) {
-      return metaKey;
+    // @ts-ignore
+    const processKey = process.env.GEMINI_API_KEY;
+    if (processKey && typeof processKey === 'string' && !isPlaceholder(processKey)) {
+      return processKey;
     }
   } catch (e) {}
 
-  // 3. Hardcoded fallback (as requested by user)
-  // Using the key provided by the user: AIzaSyAoBkCpf8Ytbcwblp6xXZ4Vz6kX6k4tFOM
+  // 3. Hardcoded fallback provided by the user
   const hardcodedKey = "AIzaSyAoBkCpf8Ytbcwblp6xXZ4Vz6kX6k4tFOM";
   if (hardcodedKey && !isPlaceholder(hardcodedKey)) {
     return hardcodedKey;
@@ -36,7 +37,9 @@ const getApiKey = () => {
   return "";
 };
 
-export const isApiKeySet = !!getApiKey() && getApiKey().length > 20;
+export const isApiKeySet = !!getApiKey() && !getApiKey().includes('MY_GEMINI') && getApiKey().length > 20;
+
+export const OFFICIAL_APP_URL = "https://ai.studio/apps/a5f580ca-d9b1-4316-bec9-8f9b4d3b9ed7?fullscreenApplet=true";
 
 // No official URL needed for production standalone
 

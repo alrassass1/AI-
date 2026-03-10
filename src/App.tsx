@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { QRCodeSVG } from 'qrcode.react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { generateMedicalResponse, analyzeEyeImage, isApiKeySet } from './services/geminiService';
+import { generateMedicalResponse, analyzeEyeImage, isApiKeySet, OFFICIAL_APP_URL } from './services/geminiService';
 import Barcode from 'react-barcode';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -293,20 +293,6 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [adminMode, setAdminMode] = useState(false);
-  const [logoClicks, setLogoClicks] = useState(0);
-
-  const handleLogoClick = () => {
-    const newClicks = logoClicks + 1;
-    setLogoClicks(newClicks);
-    if (newClicks >= 5) {
-      setAdminMode(true);
-      alert(lang === 'ar' ? 'تم تفعيل وضع المسؤول' : 'Admin mode enabled');
-      setLogoClicks(0);
-    }
-    // Reset clicks after 2 seconds
-    setTimeout(() => setLogoClicks(0), 2000);
-  };
   const [activeTab, setActiveTab] = useState('home');
   const [userName, setUserName] = useState('');
   const [showNamePrompt, setShowNamePrompt] = useState(true);
@@ -401,10 +387,10 @@ export default function App() {
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
-      if (!adminMode) e.preventDefault();
+      e.preventDefault();
     };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!adminMode && (
+      if ((
         (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 'i' || e.key === 'j')) ||
         (e.metaKey && (e.key === 'c' || e.key === 'u' || e.key === 'i' || e.key === 'j')) ||
         e.key === 'F12'
@@ -419,7 +405,7 @@ export default function App() {
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [adminMode]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent | string) => {
     if (typeof e !== 'string') e.preventDefault();
@@ -452,7 +438,7 @@ export default function App() {
       };
       setMessages((prev) => [...prev, botMessage]);
 
-      // Automatic navigation disabled as per user request to keep conversation going
+      // AI Key error detected
       if (result.action === "OFFICIAL_REDIRECT_REQUIRED") {
         console.log("AI Key error detected.");
       }
@@ -470,7 +456,7 @@ export default function App() {
   };
 
   return (
-    <div className={`flex h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-blue-50/30 text-slate-900'} font-sans overflow-hidden transition-colors duration-300 select-none`} dir={lang === 'ar' ? 'rtl' : 'ltr'} style={!adminMode ? { userSelect: 'none', WebkitUserSelect: 'none' } : {}}>
+    <div className={`flex h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-blue-50/30 text-slate-900'} font-sans overflow-hidden transition-colors duration-300 select-none`} dir={lang === 'ar' ? 'rtl' : 'ltr'} style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -489,9 +475,19 @@ export default function App() {
         fixed inset-y-0 ${lang === 'ar' ? 'right-0' : 'left-0'} w-72 bg-[#0F172A] text-white z-50 transition-transform duration-300 transform lg:relative lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : (lang === 'ar' ? 'translate-x-full' : '-translate-x-full')}
       `}>
+        {!isApiKeySet && (
+          <a 
+            href={OFFICIAL_APP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-amber-500 text-slate-900 text-[10px] font-bold p-2 text-center animate-pulse block hover:bg-amber-400 transition-colors"
+          >
+            {lang === 'ar' ? 'تنبيه: استخدم النسخة الرسمية لتفعيل الذكاء الاصطناعي' : 'Warning: Use Official Version for AI'}
+          </a>
+        )}
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogoClick}>
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-lg p-1">
                 <img src={ROAYA_LOGO} alt="Logo" className="w-full h-full object-contain" />
               </div>
@@ -583,15 +579,12 @@ export default function App() {
               icon={<Headset size={18} />}
               label={t.contact}
             />
-            {/* Developers tab restricted to owner via hidden admin mode */}
-            {adminMode && (
-              <SidebarLink 
-                active={activeTab === 'developers'} 
-                onClick={() => { setActiveTab('developers'); setIsSidebarOpen(false); }}
-                icon={<Code size={18} />}
-                label={t.developers}
-              />
-            )}
+            <SidebarLink 
+              active={activeTab === 'developers'} 
+              onClick={() => { setActiveTab('developers'); setIsSidebarOpen(false); }}
+              icon={<Code size={18} />}
+              label={t.developers}
+            />
 
             <div className="pt-6 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
               الخدمات السريعة
@@ -846,6 +839,23 @@ export default function App() {
                 title={t.theme_toggle}
               >
                 {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+              </button>
+
+              {/* Full Screen Toggle */}
+              <button 
+                onClick={() => {
+                  if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                  } else {
+                    if (document.exitFullscreen) {
+                      document.exitFullscreen();
+                    }
+                  }
+                }}
+                className={`hidden md:flex p-2 rounded-xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-200 hover:bg-slate-50 text-slate-600'} transition-all`}
+                title={lang === 'ar' ? 'ملء الشاشة' : 'Full Screen'}
+              >
+                <Maximize size={18} />
               </button>
 
               {/* Notifications */}
@@ -1737,6 +1747,28 @@ function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: 
                   {lang === 'ar' ? 'قم بلصق الكود وحفظ الصفحة.' : 'Paste the code and save the page.'}
                 </li>
               </ol>
+            </div>
+          </div>
+
+          <div className={`${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-[2.5rem] border p-8 space-y-6 shadow-sm`}>
+            <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
+              <Globe className="text-blue-600" />
+              {lang === 'ar' ? 'إعدادات الاستضافة الخارجية' : 'External Hosting Setup'}
+            </h3>
+            <div className="space-y-4 text-sm text-slate-500 leading-relaxed">
+              <p>
+                {lang === 'ar' 
+                  ? 'لتشغيل الذكاء الاصطناعي على رابطك الخاص (مثل Vercel أو Netlify)، يجب إضافة مفتاح الـ API في إعدادات البيئة (Environment Variables):' 
+                  : 'To run AI on your own domain (like Vercel or Netlify), you must add the API key in the Environment Variables:'}
+              </p>
+              <div className="bg-slate-900 text-blue-300 p-4 rounded-xl font-mono text-xs">
+                VITE_GEMINI_API_KEY=AIzaSyAoBkCpf8Ytbcwblp6xXZ4Vz6kX6k4tFOM
+              </div>
+              <p className="text-xs text-amber-600 font-bold">
+                {lang === 'ar'
+                  ? 'تنبيه: تأكد من استخدام اسم المتغير VITE_GEMINI_API_KEY ليعمل مع نظام Vite.'
+                  : 'Note: Ensure you use the variable name VITE_GEMINI_API_KEY to work with Vite.'}
+              </p>
             </div>
           </div>
 
