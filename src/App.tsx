@@ -455,6 +455,11 @@ export default function App() {
         fixed inset-y-0 ${lang === 'ar' ? 'right-0' : 'left-0'} w-72 bg-[#0F172A] text-white z-50 transition-transform duration-300 transform lg:relative lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : (lang === 'ar' ? 'translate-x-full' : '-translate-x-full')}
       `}>
+        {!isApiKeySet && (
+          <div className="bg-amber-500 text-slate-900 text-[10px] font-bold p-2 text-center animate-pulse">
+            {lang === 'ar' ? 'تنبيه: مفتاح API غير مفعل' : 'Warning: API Key not set'}
+          </div>
+        )}
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -955,21 +960,21 @@ function ChatView({
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
       <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-4 custom-scrollbar">
-        {messages.map((msg: any) => (
-          <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+        {messages.map((msg: Message) => (
+          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[80%] p-4 rounded-2xl shadow-sm ${
-              msg.sender === 'user' 
+              msg.role === 'user' 
                 ? 'bg-blue-600 text-white rounded-tr-none' 
                 : theme === 'dark' ? 'bg-slate-800 text-white rounded-tl-none' : 'bg-white text-slate-900 rounded-tl-none'
             }`}>
               <div className="flex items-center gap-2 mb-1">
-                {msg.sender === 'bot' ? <Bot size={14} /> : <User size={14} />}
+                {msg.role === 'bot' ? <Bot size={14} /> : <User size={14} />}
                 <span className="text-[10px] font-bold opacity-70">
-                  {msg.sender === 'bot' ? 'Roaya AI' : (userName || (lang === 'ar' ? 'أنت' : 'You'))}
+                  {msg.role === 'bot' ? 'Roaya AI' : (userName || (lang === 'ar' ? 'أنت' : 'You'))}
                 </span>
               </div>
               <div className="text-sm leading-relaxed">
-                <Markdown remarkPlugins={[remarkGfm]}>{msg.text}</Markdown>
+                <Markdown remarkPlugins={[remarkGfm]}>{msg.content}</Markdown>
               </div>
               <div className="text-[8px] mt-2 opacity-50 text-right">
                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

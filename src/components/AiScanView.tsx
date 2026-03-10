@@ -144,28 +144,37 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
     if (!reportRef.current) return;
     setIsGeneratingPdf(true);
     try {
-      // Create a clone for PDF to avoid UI issues
       const element = reportRef.current;
+      
+      // Use higher scale for better quality
       const canvas = await html2canvas(element, {
-        scale: 3, // Higher scale for better quality
+        scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
       });
       
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+      // If report is longer than one page, we might need to handle it, 
+      // but for now let's ensure it fits or scales.
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`Roaya_Report_${userInfo.name}_${fileNumber}.pdf`);
     } catch (error) {
       console.error('PDF generation failed', error);
-      alert('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى.');
+      alert('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى أو استخدام خيار الطباعة.');
     } finally {
       setIsGeneratingPdf(false);
     }
+  };
+
+  const printReport = () => {
+    window.print();
   };
 
   const sendToWhatsApp = () => {
@@ -520,7 +529,7 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
             className="space-y-8"
           >
             {/* Report Preview */}
-            <div ref={reportRef} className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-xl p-10 space-y-8 relative">
+            <div id="report-to-print" ref={reportRef} className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-xl p-10 space-y-8 relative">
               {/* Report Header */}
               <div className="flex justify-between items-start border-b border-slate-100 pb-8">
                 <div className="flex items-center gap-4">
@@ -686,14 +695,23 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
                   <h4 className="text-2xl font-bold">تحميل التقرير الطبي</h4>
                   <p className="text-slate-400 text-sm">يمكنك تحميل نسخة PDF من التقرير للرجوع إليها أو عرضها على الطبيب عند زيارة المستشفى.</p>
                 </div>
-                <button 
-                  onClick={downloadPdf}
-                  disabled={isGeneratingPdf}
-                  className="w-full py-4 bg-white text-slate-900 font-bold rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-3"
-                >
-                  {isGeneratingPdf ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />}
-                  تحميل التقرير (PDF)
-                </button>
+                <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={downloadPdf}
+                    disabled={isGeneratingPdf}
+                    className="w-full py-4 bg-white text-slate-900 font-bold rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-3"
+                  >
+                    {isGeneratingPdf ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />}
+                    تحميل التقرير (PDF)
+                  </button>
+                  <button 
+                    onClick={printReport}
+                    className="w-full py-4 bg-slate-800 text-white font-bold rounded-2xl hover:bg-slate-700 transition-all flex items-center justify-center gap-3"
+                  >
+                    <FileText size={20} />
+                    طباعة التقرير
+                  </button>
+                </div>
                 <div className="flex items-center gap-2 text-[10px] text-slate-500 justify-center">
                   <Shield size={12} />
                   بياناتك مشفرة وآمنة تماماً
