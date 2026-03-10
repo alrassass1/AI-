@@ -1015,7 +1015,7 @@ function ChatView({
           </div>
         )}
         <form 
-          onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+          onSubmit={(e) => { e.preventDefault(); handleSend(e); }}
           className="flex gap-2"
         >
           <input 

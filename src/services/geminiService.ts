@@ -1,14 +1,33 @@
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 
-const apiKey = (typeof process !== 'undefined' && process.env.GEMINI_API_KEY) || (import.meta as any).env.VITE_GEMINI_API_KEY;
+const getApiKey = () => {
+  // 1. Try process.env (Vite define replacement)
+  try {
+    // @ts-ignore
+    const key = process.env.GEMINI_API_KEY;
+    if (key && typeof key === 'string' && key.length > 10 && !key.includes('process.env')) {
+      return key;
+    }
+  } catch (e) {}
 
-if (!apiKey) {
-  console.warn("GEMINI_API_KEY is not set. AI features will not work correctly. Please set GEMINI_API_KEY in your environment variables.");
-}
+  // 2. Try import.meta.env
+  try {
+    const metaKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
+    if (metaKey && typeof metaKey === 'string' && metaKey.length > 10) {
+      return metaKey;
+    }
+  } catch (e) {}
 
-const ai = new GoogleGenAI({ apiKey: apiKey || "" });
+  return "";
+};
 
-export const isApiKeySet = !!apiKey;
+export const isApiKeySet = !!getApiKey();
+
+// Helper to get AI instance with current key
+const getAI = () => {
+  const key = getApiKey();
+  return new GoogleGenAI({ apiKey: key });
+};
 
 const SYSTEM_INSTRUCTION = `أنت المساعد الذكي الرسمي لمجموعة مستشفيات رؤية لطب وجراحة العيون والشبكية. 
 مهمتك هي الإجابة على استفسارات المرضى حول صحة العيون، جراحات الشبكية، الليزك، والمياه البيضاء، وتزويدهم بمعلومات الفروع والتواصل الصحيحة.
@@ -42,9 +61,10 @@ const navigateToScanTool: FunctionDeclaration = {
 
 export async function generateMedicalResponse(prompt: string) {
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: prompt,
+      contents: [{ parts: [{ text: prompt }] }],
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         tools: [{ functionDeclarations: [navigateToScanTool] }]
@@ -66,10 +86,17 @@ export async function generateMedicalResponse(prompt: string) {
       text: response.text || "عذراً، لم أتمكن من الحصول على إجابة حالياً. يرجى المحاولة مرة أخرى.",
       action: null
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating medical response:", error);
+    const message = error?.message || "";
+    if (message.includes("API_KEY_INVALID") || message.includes("403")) {
+      return {
+        text: "عذراً، يبدو أن هناك مشكلة في مفتاح البرمجة (API Key) الخاص بالذكاء الاصطناعي. يرجى التأكد من صحة المفتاح في إعدادات البرنامج.",
+        action: null
+      };
+    }
     return {
-      text: "عذراً، حدث خطأ غير متوقع أثناء الاتصال بخدمات الذكاء الاصطناعي. يرجى التأكد من جودة اتصالك بالإنترنت أو المحاولة لاحقاً.",
+      text: "عذراً، حدث خطأ أثناء الاتصال بخدمات الذكاء الاصطناعي. يرجى التأكد من جودة اتصالك بالإنترنت أو المحاولة لاحقاً.",
       action: null
     };
   }
@@ -77,17 +104,19 @@ export async function generateMedicalResponse(prompt: string) {
 
 export async function analyzeEyeImage(imageData: string, userInfo: { name: string, age: string, chronicDiseases: string }) {
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: [
-        {
-          inlineData: {
-            mimeType: "image/jpeg",
-            data: imageData.split(',')[1],
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              mimeType: "image/jpeg",
+              data: imageData.includes(',') ? imageData.split(',')[1] : imageData,
+            },
           },
-        },
-        {
-          text: `بصفتك خبيراً في طب وجراحة العيون في مستشفيات رؤية، قم بتحليل هذه الصورة للعين.
+          {
+            text: `بصفتك خبيراً في طب وجراحة العيون في مستشفيات رؤية، قم بتحليل هذه الصورة للعين.
           المريض: ${userInfo.name}، العمر: ${userInfo.age}، الأمراض المزمنة: ${userInfo.chronicDiseases || 'لا يوجد'}.
           
           المطلوب:
@@ -98,8 +127,9 @@ export async function analyzeEyeImage(imageData: string, userInfo: { name: strin
           5. التأكيد على ضرورة زيارة أقرب فرع لمستشفيات رؤية للفحص السريري.
           
           يجب أن يكون الرد بتنسيق JSON يحتوي على الحقول المطلوبة.`
-        }
-      ],
+          }
+        ]
+      },
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -120,13 +150,18 @@ export async function analyzeEyeImage(imageData: string, userInfo: { name: strin
     const text = response.text;
     if (!text) throw new Error("Empty response from AI");
     return JSON.parse(text);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error analyzing eye image:", error);
+    const message = error?.message || "";
+    if (message.includes("API_KEY_INVALID") || message.includes("403")) {
+      throw new Error("عذراً، مفتاح البرمجة (API Key) غير صالح. يرجى التأكد من إعدادات البرنامج.");
+    }
     throw new Error("عذراً، حدث خطأ أثناء تحليل الصورة. يرجى التأكد من جودة الاتصال أو المحاولة لاحقاً.");
   }
 }
 
 export async function startChat() {
+  const ai = getAI();
   return ai.chats.create({
     model: "gemini-3-flash-preview",
     config: {
