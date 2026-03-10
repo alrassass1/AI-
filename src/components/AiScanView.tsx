@@ -542,7 +542,7 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
             className="space-y-8"
           >
             {/* Report Preview */}
-            <div id="report-to-print" ref={reportRef} className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-xl p-10 space-y-8 relative">
+            <div id="report-to-print" ref={reportRef} className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-xl p-10 space-y-8 relative select-text">
               {/* Report Header */}
               <div className="flex justify-between items-start border-b border-slate-100 pb-8">
                 <div className="flex items-center gap-4">

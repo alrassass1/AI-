@@ -1,43 +1,12 @@
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 
-// Robust API key retrieval for various environments
+// Robust API key retrieval - Hardcoded to ensure it works everywhere without configuration
 const getApiKey = () => {
-  const isPlaceholder = (key: string) => {
-    return !key || 
-           key.includes('MY_GEMINI') || 
-           key.includes('YOUR_API_KEY') || 
-           key.includes('process.env') || 
-           key.length < 20;
-  };
-
-  // 1. Try VITE_GEMINI_API_KEY (Standard for Vite deployments like Vercel/Netlify)
-  try {
-    // @ts-ignore
-    const viteKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (viteKey && typeof viteKey === 'string' && !isPlaceholder(viteKey)) {
-      return viteKey;
-    }
-  } catch (e) {}
-
-  // 2. Try GEMINI_API_KEY (Standard for Node.js or some CI/CD)
-  try {
-    // @ts-ignore
-    const processKey = process.env.GEMINI_API_KEY;
-    if (processKey && typeof processKey === 'string' && !isPlaceholder(processKey)) {
-      return processKey;
-    }
-  } catch (e) {}
-
-  // 3. Hardcoded fallback provided by the user
-  const hardcodedKey = "AIzaSyAoBkCpf8Ytbcwblp6xXZ4Vz6kX6k4tFOM";
-  if (hardcodedKey && !isPlaceholder(hardcodedKey)) {
-    return hardcodedKey;
-  }
-
-  return "";
+  // Hardcoded key provided by the user to ensure it works on all external links
+  return "AIzaSyAoBkCpf8Ytbcwblp6xXZ4Vz6kX6k4tFOM";
 };
 
-export const isApiKeySet = !!getApiKey() && !getApiKey().includes('MY_GEMINI') && getApiKey().length > 20;
+export const isApiKeySet = true; // Always true because we have a hardcoded key
 
 export const OFFICIAL_APP_URL = "https://ai.studio/apps/a5f580ca-d9b1-4316-bec9-8f9b4d3b9ed7?fullscreenApplet=true";
 
@@ -53,10 +22,10 @@ const SYSTEM_INSTRUCTION = `أنت المساعد الذكي الرسمي لمج
 مهمتك هي الإجابة على استفسارات المرضى حول صحة العيون، جراحات الشبكية، الليزك، والمياه البيضاء، وتزويدهم بمعلومات الفروع والتواصل الصحيحة.
 
 فروعنا ومعلومات التواصل:
-1. المركز الرئيسي - رؤية سيئون: حضرموت، شارع الجزائر، مقابل مركز غسيل الكلى. هاتف: [05-408993](tel:05408993) / [05-441177](tel:05441177)، واتساب: [774441177](https://wa.me/967774441177). الموقع: [خرائط جوجل](https://www.google.com/maps?q=رؤية+لطب+وجراحة+العيون+والشبكية+سيئون)
-2. رؤية عدن: المنصورة، شارع السنافر، بجانب بريد القاهرة. هاتف: [02-388150](tel:02388150) / [02-388151](tel:02388151)، واتساب: [782255557](https://wa.me/967782255557). الموقع: [خرائط جوجل](https://www.google.com/maps?q=رؤية+لطب+وجراحة+العيون+والشبكية+عدن)
-3. رؤية المكلا: الديس، الإشارة، بجانب مؤسسة الشامي. هاتف: [05-310888](tel:05310888)، واتساب: [778844766](https://wa.me/967778844766) / [730009097](https://wa.me/967730009097). الموقع: [خرائط جوجل](https://www.google.com/maps?q=رؤية+لطب+وجراحة+العيون+والشبكية+المكلا)
-4. رؤية الشحر: حي المنصورة، بجوار مدارس التفوق. واتساب: [781765720](https://wa.me/967781765720) / [781765257](https://wa.me/967781765257). الموقع: [خرائط جوجل](https://www.google.com/maps?q=رؤية+لطب+وجراحة+العيون+والشبكية+الشحر)
+1. المركز الرئيسي - رؤية سيئون: حضرموت، شارع الجزائر، مقابل مركز غسيل الكلى. هاتف: [05408993](tel:05408993) / [05441177](tel:05441177)، واتساب: [774441177](https://wa.me/967774441177).
+2. رؤية عدن: المنصورة، شارع السنافر، بجانب بريد القاهرة. هاتف: [02388150](tel:02388150) / [02388151](tel:02388151)، واتساب: [782255557](https://wa.me/967782255557).
+3. رؤية المكلا: الديس، الإشارة، بجانب مؤسسة الشامي. هاتف: [05310888](tel:05310888)، واتساب: [778844766](https://wa.me/967778844766) / [730009097](https://wa.me/967730009097).
+4. رؤية الشحر: حي المنصورة، بجوار مدارس التفوق. واتساب: [781765720](https://wa.me/967781765720) / [781765257](https://wa.me/967781765257).
 
 مواعيد الدوام: جميع الأيام ما عدا الجمعة. الفترة الصباحية (8:30 ص - 1:30 ظ)، الفترة المسائية (4:30 م - 8:30 م). ملاحظة: لا توجد فترة مسائية يوم الخميس في فروع عدن والمكلا والشحر.
 
@@ -81,7 +50,7 @@ const navigateToScanTool: FunctionDeclaration = {
 
 const LOCAL_KNOWLEDGE: Record<string, string> = {
   "مواعيد": "مواعيد الدوام في مستشفيات رؤية هي من السبت إلى الخميس. الفترة الصباحية: 8:30 ص - 1:30 ظ، والفترة المسائية: 4:30 م - 8:30 م. (ملاحظة: لا توجد فترة مسائية يوم الخميس في فروع عدن والمكلا والشحر).",
-  "فروع": "لدينا 4 فروع رئيسية: \n1. سيئون (المركز الرئيسي): 05-408993\n2. عدن: 02-388150\n3. المكلا: 05-310888\n4. الشحر: 781765720",
+  "فروع": "لدينا 4 فروع رئيسية: \n1. سيئون (المركز الرئيسي): [05408993](tel:05408993) / [05441177](tel:05441177)، واتساب: [774441177](https://wa.me/967774441177).\n2. عدن: [02388150](tel:02388150) / [02388151](tel:02388151)، واتساب: [782255557](https://wa.me/967782255557).\n3. المكلا: [05310888](tel:05310888)، واتساب: [778844766](https://wa.me/967778844766) / [730009097](https://wa.me/967730009097).\n4. الشحر: واتساب: [781765720](https://wa.me/967781765720) / [781765257](https://wa.me/967781765257).",
   "ليزك": "نقدم أحدث تقنيات الليزك وتصحيح النظر في مستشفيات رؤية بأيدي أمهر الأطباء. يمكنك حجز موعد للفحص الأولي للتأكد من ملاءمة العملية لعينيك.",
   "مياه بيضاء": "تجري مستشفيات رؤية عمليات إزالة المياه البيضاء (الفاكو) وزراعة أحدث أنواع العدسات بتقنيات متطورة ونسب نجاح عالية جداً.",
   "شبكية": "نحن متخصصون في جراحة الشبكية والجسم الزجاجي، ونمتلك أحدث الأجهزة لتشخيص وعلاج اعتلال الشبكية السكري وانفصال الشبكية.",

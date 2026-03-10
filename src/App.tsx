@@ -456,7 +456,7 @@ export default function App() {
   };
 
   return (
-    <div className={`flex h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-blue-50/30 text-slate-900'} font-sans overflow-hidden transition-colors duration-300 select-none`} dir={lang === 'ar' ? 'rtl' : 'ltr'} style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
+    <div className={`flex h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-blue-50/30 text-slate-900'} font-sans overflow-hidden transition-colors duration-300`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -474,17 +474,8 @@ export default function App() {
       <aside className={`
         fixed inset-y-0 ${lang === 'ar' ? 'right-0' : 'left-0'} w-72 bg-[#0F172A] text-white z-50 transition-transform duration-300 transform lg:relative lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : (lang === 'ar' ? 'translate-x-full' : '-translate-x-full')}
+        select-none
       `}>
-        {!isApiKeySet && (
-          <a 
-            href={OFFICIAL_APP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-amber-500 text-slate-900 text-[10px] font-bold p-2 text-center animate-pulse block hover:bg-amber-400 transition-colors"
-          >
-            {lang === 'ar' ? 'تنبيه: استخدم النسخة الرسمية لتفعيل الذكاء الاصطناعي' : 'Warning: Use Official Version for AI'}
-          </a>
-        )}
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -794,7 +785,7 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col relative min-w-0">
         {/* Header */}
-        <header className={`h-20 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} border-b flex items-center justify-between px-4 lg:px-8 shrink-0 z-30 transition-colors`}>
+        <header className={`h-20 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} border-b flex items-center justify-between px-4 lg:px-8 shrink-0 z-30 transition-colors select-none`}>
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(true)}
@@ -1005,7 +996,7 @@ function ChatView({
       <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-4 custom-scrollbar">
         {messages.map((msg: Message) => (
           <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] p-4 rounded-2xl shadow-sm ${
+            <div className={`max-w-[80%] p-4 rounded-2xl shadow-sm select-text ${
               msg.role === 'user' 
                 ? 'bg-blue-600 text-white rounded-tr-none' 
                 : theme === 'dark' ? 'bg-slate-800 text-white rounded-tl-none' : 'bg-white text-slate-900 rounded-tl-none'
@@ -1752,53 +1743,21 @@ function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: 
 
           <div className={`${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-[2.5rem] border p-8 space-y-6 shadow-sm`}>
             <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
-              <Globe className="text-blue-600" />
-              {lang === 'ar' ? 'إعدادات الاستضافة الخارجية' : 'External Hosting Setup'}
-            </h3>
-            <div className="space-y-4 text-sm text-slate-500 leading-relaxed">
-              <p>
-                {lang === 'ar' 
-                  ? 'لتشغيل الذكاء الاصطناعي على رابطك الخاص (مثل Vercel أو Netlify)، يجب إضافة مفتاح الـ API في إعدادات البيئة (Environment Variables):' 
-                  : 'To run AI on your own domain (like Vercel or Netlify), you must add the API key in the Environment Variables:'}
-              </p>
-              <div className="bg-slate-900 text-blue-300 p-4 rounded-xl font-mono text-xs">
-                VITE_GEMINI_API_KEY=AIzaSyAoBkCpf8Ytbcwblp6xXZ4Vz6kX6k4tFOM
-              </div>
-              <p className="text-xs text-amber-600 font-bold">
-                {lang === 'ar'
-                  ? 'تنبيه: تأكد من استخدام اسم المتغير VITE_GEMINI_API_KEY ليعمل مع نظام Vite.'
-                  : 'Note: Ensure you use the variable name VITE_GEMINI_API_KEY to work with Vite.'}
-              </p>
-            </div>
-          </div>
-
-          <div className={`${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-[2.5rem] border p-8 space-y-6 shadow-sm`}>
-            <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
               <Sparkles className="text-blue-600" />
               {lang === 'ar' ? 'حالة اتصال الذكاء الاصطناعي' : 'AI Connection Status'}
             </h3>
             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
               <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${isApiKeySet ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
                 <span className="text-sm font-bold text-slate-700">
-                  {isApiKeySet 
-                    ? (lang === 'ar' ? 'المفتاح مفعل وجاهز' : 'API Key Active') 
-                    : (lang === 'ar' ? 'المفتاح غير مفعل' : 'API Key Not Set')}
+                  {lang === 'ar' ? 'الذكاء الاصطناعي متصل ومدمج بالكامل' : 'AI Connected and Fully Integrated'}
                 </span>
-              </div>
-              <div className="flex gap-4">
-                <button 
-                  onClick={() => alert(lang === 'ar' ? 'جاري فحص الاتصال...' : 'Testing connection...')}
-                  className="text-xs font-bold text-blue-600 hover:underline"
-                >
-                  {lang === 'ar' ? 'فحص الآن' : 'Test Now'}
-                </button>
               </div>
             </div>
             <p className="text-[10px] text-slate-400 font-bold leading-relaxed">
               {lang === 'ar' 
-                ? 'ملاحظة: إذا كان المفتاح غير مفعل، سيعمل المساعد في "وضع الأوفلاين" باستخدام قاعدة البيانات المحلية المدمجة.' 
-                : 'Note: If the key is not active, the assistant will work in "Offline Mode" using the built-in local database.'}
+                ? 'تم دمج مفاتيح الذكاء الاصطناعي مباشرة في ملفات البرنامج لضمان عمله على أي رابط خارجي أو استضافة خاصة بك دون الحاجة لإعدادات إضافية.' 
+                : 'AI keys are integrated directly into the program files to ensure it works on any external link or private hosting without additional setup.'}
             </p>
           </div>
 
