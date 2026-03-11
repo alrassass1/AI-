@@ -1,12 +1,38 @@
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 
-// Robust API key retrieval - Hardcoded to ensure it works everywhere without configuration
+// Robust API key retrieval - Tries environment variables first, then fallback
 const getApiKey = () => {
-  // Hardcoded key provided by the user to ensure it works on all external links
-  return "AIzaSyAoBkCpf8Ytbcwblp6xXZ4Vz6kX6k4tFOM";
+  // 1. Try process.env (Standard for Node.js/Cloud Run/AI Studio)
+  // This is defined in vite.config.ts via define
+  let key = "";
+  try {
+    // @ts-ignore
+    key = process.env.GEMINI_API_KEY || "";
+    if (key && key.length > 20 && !key.includes('your_api_key')) {
+      return key;
+    }
+  } catch (e) {}
+
+  // 2. Try import.meta.env (Standard for Vite/Client-side)
+  try {
+    // @ts-ignore
+    key = import.meta.env.VITE_GEMINI_API_KEY || "";
+    if (key && key.length > 20 && !key.includes('your_api_key')) {
+      return key;
+    }
+  } catch (e) {}
+
+  // 3. Hardcoded fallback (Replace with your real key if you want it built-in)
+  // Note: This key is provided as a placeholder. If it's invalid, the app will fail.
+  const hardcodedKey = "AIzaSyAoBkCpf8Ytbcwblp6xXZ4Vz6kX6k4tFOM";
+  if (hardcodedKey && hardcodedKey.length > 20 && !hardcodedKey.includes('MY_GEMINI')) {
+    return hardcodedKey;
+  }
+
+  return "";
 };
 
-export const isApiKeySet = true; // Always true because we have a hardcoded key
+export const isApiKeySet = !!getApiKey();
 
 export const OFFICIAL_APP_URL = "https://ai.studio/apps/a5f580ca-d9b1-4316-bec9-8f9b4d3b9ed7?fullscreenApplet=true";
 
@@ -120,7 +146,7 @@ export async function generateMedicalResponse(prompt: string) {
     const message = error?.message || "";
     if (message.includes("API_KEY_INVALID") || message.includes("403") || !getApiKey()) {
       return {
-        text: `عذراً، يبدو أن هناك مشكلة في تفعيل خدمات الذكاء الاصطناعي. يرجى التأكد من إعدادات مفتاح البرمجة (API Key) في بيئة الاستضافة الخاصة بك.`,
+        text: `عذراً، يبدو أن هناك مشكلة في تفعيل خدمات الذكاء الاصطناعي (API Key). يرجى التأكد من إضافة مفتاح صالح في إعدادات الاستضافة الخاصة بك. سأقوم بالرد عليك الآن من قاعدة البيانات المحلية المدمجة: \n\n` + (getLocalResponse(prompt) || "عذراً، لا أملك إجابة محلية لهذا السؤال حالياً."),
         action: null
       };
     }

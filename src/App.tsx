@@ -802,8 +802,10 @@ export default function App() {
                   {t.welcome_to}
                 </h1>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t.online_now}</span>
+                  <div className={`w-2 h-2 ${isApiKeySet ? 'bg-green-500 animate-pulse' : 'bg-red-500'} rounded-full`} />
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    {isApiKeySet ? (lang === 'ar' ? 'المساعد متصل' : 'AI Online') : (lang === 'ar' ? 'المساعد أوفلاين' : 'AI Offline')}
+                  </span>
                 </div>
               </div>
             </div>
@@ -812,6 +814,18 @@ export default function App() {
           <div className="flex items-center gap-2 md:gap-4">
             {/* Action Icons */}
             <div className="flex items-center gap-1 md:gap-2">
+              {/* Copy Link Button */}
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert(lang === 'ar' ? 'تم نسخ رابط التطبيق بنجاح!' : 'App link copied successfully!');
+                }}
+                className={`p-2 rounded-xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-blue-400' : 'border-slate-200 hover:bg-slate-50 text-blue-600'} transition-all flex items-center gap-2`}
+                title={lang === 'ar' ? 'نسخ رابط التطبيق' : 'Copy App Link'}
+              >
+                <Share2 size={18} />
+                <span className="hidden md:block text-[10px] font-black">{lang === 'ar' ? 'نسخ الرابط' : 'Copy Link'}</span>
+              </button>
 
               {/* Language Toggle */}
               <button 
@@ -1748,16 +1762,47 @@ function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: 
             </h3>
             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                <div className={`w-3 h-3 rounded-full ${isApiKeySet ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                 <span className="text-sm font-bold text-slate-700">
-                  {lang === 'ar' ? 'الذكاء الاصطناعي متصل ومدمج بالكامل' : 'AI Connected and Fully Integrated'}
+                  {isApiKeySet 
+                    ? (lang === 'ar' ? 'الذكاء الاصطناعي متصل وجاهز' : 'AI Connected and Ready') 
+                    : (lang === 'ar' ? 'الذكاء الاصطناعي غير متصل' : 'AI Not Connected')}
                 </span>
               </div>
+              {isApiKeySet && (
+                <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase">
+                  {lang === 'ar' ? 'مفتاح مدمج' : 'Embedded Key'}
+                </div>
+              )}
             </div>
             <p className="text-[10px] text-slate-400 font-bold leading-relaxed">
               {lang === 'ar' 
-                ? 'تم دمج مفاتيح الذكاء الاصطناعي مباشرة في ملفات البرنامج لضمان عمله على أي رابط خارجي أو استضافة خاصة بك دون الحاجة لإعدادات إضافية.' 
-                : 'AI keys are integrated directly into the program files to ensure it works on any external link or private hosting without additional setup.'}
+                ? 'ملاحظة: إذا كان المفتاح غير مفعل، سيعمل المساعد في وضع الأوفلاين باستخدام قاعدة البيانات المحلية المدمجة.' 
+                : 'Note: If the key is not active, the assistant will work in offline mode using the built-in local database.'}
+            </p>
+          </div>
+
+          <div className={`${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-[2.5rem] border p-8 space-y-6 shadow-sm`}>
+            <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
+              <Share2 className="text-blue-600" />
+              {lang === 'ar' ? 'رابط التطبيق' : 'App Link'}
+            </h3>
+            <div className="flex items-center gap-2 p-4 bg-slate-900 rounded-2xl border border-slate-800">
+              <input 
+                type="text" 
+                readOnly 
+                value={window.location.href}
+                className="flex-1 bg-transparent text-blue-300 text-xs font-mono outline-none"
+              />
+              <button 
+                onClick={() => copyToClipboard(window.location.href)}
+                className="p-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/40 transition-all"
+              >
+                <Copy size={16} />
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-500 font-bold">
+              {lang === 'ar' ? 'يمكنك نسخ هذا الرابط ومشاركته مع المرضى أو استخدامه في موقعك.' : 'You can copy this link and share it with patients or use it on your site.'}
             </p>
           </div>
 
