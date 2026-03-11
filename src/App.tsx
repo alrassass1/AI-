@@ -786,25 +786,25 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col relative min-w-0">
         {/* Header */}
-        <header className={`h-20 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} border-b flex items-center justify-between px-4 lg:px-8 shrink-0 z-30 transition-colors select-none`}>
+        <header className={`h-20 ${theme === 'dark' ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'} border-b flex items-center justify-between px-4 lg:px-8 shrink-0 z-[60] backdrop-blur-xl sticky top-0 transition-colors select-none`}>
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(true)}
-              className={`lg:hidden p-2 ${theme === 'dark' ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100'} rounded-lg transition-colors`}
+              className={`lg:hidden p-2.5 ${theme === 'dark' ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100'} rounded-2xl transition-all active:scale-90`}
             >
-              <Menu size={20} />
+              <Menu size={22} />
             </button>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-sm p-1 border border-slate-100">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center overflow-hidden shadow-md p-1.5 border border-slate-100 group cursor-pointer hover:scale-105 transition-transform">
                 <img src={ROAYA_LOGO} alt="Logo" className="w-full h-full object-contain" />
               </div>
               <div className="flex flex-col">
-                <h1 className={`text-sm md:text-lg font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'} leading-tight`}>
+                <h1 className={`text-sm md:text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'} leading-tight tracking-tight`}>
                   {t.welcome_to}
                 </h1>
-                <div className="flex items-center gap-1.5">
-                  <div className={`w-2 h-2 ${isApiKeySet ? 'bg-green-500 animate-pulse' : 'bg-red-500'} rounded-full`} />
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 ${isApiKeySet ? 'bg-green-500 animate-pulse' : 'bg-red-500'} rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]`} />
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
                     {isApiKeySet ? (lang === 'ar' ? 'المساعد متصل' : 'AI Online') : (lang === 'ar' ? 'المساعد أوفلاين' : 'AI Offline')}
                   </span>
                 </div>
@@ -814,37 +814,37 @@ export default function App() {
 
           <div className="flex items-center gap-2 md:gap-4">
             {/* Action Icons */}
-            <div className="flex items-center gap-1 md:gap-2">
+            <div className="flex items-center gap-2">
               {/* Copy Link Button */}
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
                   alert(lang === 'ar' ? 'تم نسخ رابط التطبيق بنجاح!' : 'App link copied successfully!');
                 }}
-                className={`p-2 rounded-xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-blue-400' : 'border-slate-200 hover:bg-slate-50 text-blue-600'} transition-all flex items-center gap-2`}
+                className={`p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-blue-400' : 'border-slate-200 hover:bg-slate-50 text-blue-600'} transition-all flex items-center gap-2 active:scale-90`}
                 title={lang === 'ar' ? 'نسخ رابط التطبيق' : 'Copy App Link'}
               >
-                <Share2 size={18} />
-                <span className="hidden md:block text-[10px] font-black">{lang === 'ar' ? 'نسخ الرابط' : 'Copy Link'}</span>
+                <Share2 size={20} />
+                <span className="hidden lg:block text-xs font-black">{lang === 'ar' ? 'نسخ الرابط' : 'Copy Link'}</span>
               </button>
 
               {/* Language Toggle */}
               <button 
                 onClick={toggleLang}
-                className={`p-2 rounded-xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-blue-400' : 'border-slate-200 hover:bg-slate-50 text-blue-600'} transition-all flex items-center gap-1`}
+                className={`p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-blue-400' : 'border-slate-200 hover:bg-slate-50 text-blue-600'} transition-all flex items-center gap-2 active:scale-90`}
                 title={t.lang_toggle}
               >
-                <Languages size={18} />
-                <span className="text-[10px] font-black">{t.lang_code}</span>
+                <Languages size={20} />
+                <span className="text-xs font-black">{t.lang_code}</span>
               </button>
 
               {/* Theme Toggle */}
               <button 
                 onClick={toggleTheme}
-                className={`p-2 rounded-xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-amber-400' : 'border-slate-200 hover:bg-slate-50 text-slate-600'} transition-all`}
+                className={`p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-amber-400' : 'border-slate-200 hover:bg-slate-50 text-slate-600'} transition-all active:scale-90`}
                 title={t.theme_toggle}
               >
-                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
               </button>
 
               {/* Full Screen Toggle */}
@@ -858,20 +858,20 @@ export default function App() {
                     }
                   }
                 }}
-                className={`hidden md:flex p-2 rounded-xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-200 hover:bg-slate-50 text-slate-600'} transition-all`}
+                className={`hidden md:flex p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-200 hover:bg-slate-50 text-slate-600'} transition-all active:scale-90`}
                 title={lang === 'ar' ? 'ملء الشاشة' : 'Full Screen'}
               >
-                <Maximize size={18} />
+                <Maximize size={20} />
               </button>
 
               {/* Notifications */}
               <div className="relative">
                 <button 
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className={`p-2 rounded-xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-blue-400' : 'border-slate-200 hover:bg-slate-50 text-blue-600'} transition-all relative`}
+                  className={`p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-blue-400' : 'border-slate-200 hover:bg-slate-50 text-blue-600'} transition-all relative active:scale-90`}
                   title={t.notifications}
                 >
-                  <Bell size={18} />
+                  <Bell size={20} />
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
                 </button>
                 
@@ -881,28 +881,30 @@ export default function App() {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className={`absolute top-full ${lang === 'ar' ? 'left-0' : 'right-0'} mt-2 w-64 ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} border rounded-2xl shadow-2xl p-4 z-50`}
+                      className={`absolute top-full ${lang === 'ar' ? 'left-0' : 'right-0'} mt-3 w-72 ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-2xl shadow-2xl border p-4 z-50`}
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className={`text-xs font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{t.notifications}</h4>
+                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">{t.notifications}</h4>
                         <button onClick={() => setShowNotifications(false)} className="text-slate-400 hover:text-slate-600"><X size={14} /></button>
                       </div>
-                      <div className="py-4 text-center">
-                        <MessageCircle size={32} className="mx-auto text-slate-300 mb-2" />
-                        <p className="text-[10px] text-slate-500">{t.no_notifications}</p>
+                      <div className="text-center py-6 space-y-2">
+                        <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                          <Bell size={20} />
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-bold">{t.no_notifications}</p>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-            </div>
 
-            <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 ${theme === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'} rounded-full text-xs font-medium`}>
-              <Star size={14} className="text-amber-500 fill-amber-500" />
-              {lang === 'ar' ? 'أعلى تقييم في جراحة العيون' : 'Top Rated in Eye Surgery'}
-            </div>
-            <div className={`w-8 h-8 ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-50'} rounded-full flex items-center justify-center`}>
-              <User size={18} />
+              <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 ${theme === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'} rounded-full text-xs font-medium`}>
+                <Star size={14} className="text-amber-500 fill-amber-500" />
+                {lang === 'ar' ? 'أعلى تقييم في جراحة العيون' : 'Top Rated in Eye Surgery'}
+              </div>
+              <div className={`w-10 h-10 ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-50'} rounded-2xl flex items-center justify-center border ${theme === 'dark' ? 'border-slate-700' : 'border-white'} shadow-sm`}>
+                <User size={20} />
+              </div>
             </div>
           </div>
         </header>
@@ -1149,42 +1151,42 @@ function HomeHero({ onScan, onTabChange, t, theme, lang }: { onScan: () => void,
       </div>
 
       {/* Hero Section */}
-      <div className={`relative h-[550px] rounded-[3.5rem] overflow-hidden shadow-2xl border-8 ${theme === 'dark' ? 'border-slate-800' : 'border-white'} group`}>
+      <div className={`relative h-[600px] rounded-[4rem] overflow-hidden shadow-2xl border-8 ${theme === 'dark' ? 'border-slate-800' : 'border-white'} group`}>
         <img 
           src="https://roayae.org/wp-content/uploads/2026/02/%D9%83%D8%B4%D9%81-1024x680.jpg" 
           alt="Roeya Hospital Building" 
           className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent flex items-end p-12">
-          <div className="max-w-2xl space-y-8">
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent flex items-end p-8 lg:p-16">
+          <div className="max-w-3xl space-y-10">
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-3 px-5 py-2.5 bg-blue-500/90 backdrop-blur-md text-white rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-blue-500/20"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="inline-flex items-center gap-3 px-6 py-3 bg-blue-600/90 backdrop-blur-xl text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] shadow-2xl shadow-blue-500/40 border border-blue-400/30"
             >
-              <Sparkles size={16} />
+              <Sparkles size={18} />
               {lang === 'ar' ? 'تقنية الذكاء الاصطناعي الثورية' : 'Revolutionary AI Technology'}
             </motion.div>
-            <div className="space-y-4">
-              <h2 className="text-6xl font-black text-white leading-[1.1] tracking-tight">
+            <div className="space-y-6">
+              <h2 className="text-5xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight drop-shadow-2xl">
                 {lang === 'ar' ? 'فحص الشبكية السريع' : 'Fast Retina Scan'}
               </h2>
-              <p className="text-2xl text-blue-50 font-medium max-w-lg leading-relaxed opacity-90">
-                {lang === 'ar' ? 'احصل على تقرير أولي دقيق لحالة عينيك في أقل من دقيقة واحدة.' : 'Get an accurate preliminary report of your eye condition in less than a minute.'}
+              <p className="text-xl lg:text-2xl text-blue-50 font-medium max-w-xl leading-relaxed opacity-95 drop-shadow-lg">
+                {lang === 'ar' ? 'احصل على تقرير أولي دقيق لحالة عينيك في أقل من دقيقة واحدة باستخدام أحدث تقنيات الذكاء الاصطناعي.' : 'Get an accurate preliminary report of your eye condition in less than a minute using the latest AI technology.'}
               </p>
             </div>
-            <div className="flex flex-wrap gap-5">
+            <div className="flex flex-wrap gap-6">
               <button 
                 onClick={onScan}
-                className="px-10 py-5 bg-white text-slate-900 rounded-[2rem] font-black text-xl hover:bg-blue-50 transition-all flex items-center gap-4 shadow-2xl hover:-translate-y-1 active:scale-95"
+                className="px-12 py-6 bg-white text-slate-900 rounded-3xl font-black text-xl hover:bg-blue-50 transition-all flex items-center gap-4 shadow-2xl hover:-translate-y-1 active:scale-95 group/btn"
               >
-                <Camera size={28} className="text-blue-600" />
+                <Camera size={28} className="text-blue-600 group-hover/btn:scale-110 transition-transform" />
                 {lang === 'ar' ? 'ابدأ الفحص الآن' : 'Start Scan Now'}
               </button>
               <button 
                 onClick={() => onTabChange('chat')}
-                className="px-10 py-5 bg-blue-600 text-white rounded-[2rem] font-black text-xl hover:bg-blue-500 transition-all flex items-center gap-4 shadow-2xl hover:-translate-y-1 active:scale-95"
+                className="px-12 py-6 bg-blue-600/20 backdrop-blur-xl text-white border border-white/30 rounded-3xl font-black text-xl hover:bg-blue-600/40 transition-all flex items-center gap-4 shadow-2xl hover:-translate-y-1 active:scale-95"
               >
                 <MessageSquare size={28} />
                 {t.chat}

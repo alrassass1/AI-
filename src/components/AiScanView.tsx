@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Barcode from 'react-barcode';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import { analyzeEyeImage } from '../services/geminiService';
+import { analyzeEyeImage, isApiKeySet } from '../services/geminiService';
 
 const BRANCHES = [
   { id: 'seiyun', name: 'رؤية سيئون (المركز الرئيسي)', whatsapp: '774441177' },
@@ -22,7 +22,8 @@ const SCAN_HERO_IMAGE = "https://roayae.org/wp-content/uploads/2026/02/%D9%83%D8
 
 export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: string, theme?: string }) {
   const isAr = lang === 'ar';
-  const [step, setStep] = useState<'info' | 'upload' | 'analyzing' | 'result' | 'history'>('info');
+  const [step, setStep] = useState<'info' | 'upload' | 'analyzing' | 'result' | 'history' | 'error'>('info');
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState({
     name: '',
     phone: '',
@@ -74,6 +75,13 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
 
   const startAnalysis = async () => {
     if (!image) return;
+    
+    // Check if API key is set before starting
+    if (!isApiKeySet) {
+      alert(isAr ? "عذراً، خدمات الذكاء الاصطناعي غير مفعلة حالياً. يرجى التأكد من إعدادات النظام." : "Sorry, AI services are not activated currently. Please check system settings.");
+      return;
+    }
+
     setStep('analyzing');
     try {
       // Resize image before analysis to ensure it's within limits
@@ -97,9 +105,16 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
     } catch (error: any) {
       console.error(error);
       const errorMsg = error.message || "حدث خطأ أثناء تحليل الصورة. يرجى المحاولة مرة أخرى أو التأكد من جودة الصورة.";
-      alert(errorMsg);
-      setStep('upload');
+      setAnalysisError(errorMsg);
+      setStep('error');
     }
+  };
+
+  const resetScan = () => {
+    setImage(null);
+    setAnalysis(null);
+    setAnalysisError(null);
+    setStep('info');
   };
 
   const resizeImage = (base64Str: string, maxWidth = 1024, maxHeight = 1024): Promise<string> => {
@@ -530,6 +545,37 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
                   ))}
                 </div>
               )}
+            </div>
+          </motion.div>
+        )}
+
+        {step === 'error' && (
+          <motion.div 
+            key="error"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-[2.5rem] border border-red-100 p-12 text-center space-y-6 shadow-sm"
+          >
+            <div className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto">
+              <AlertCircle size={40} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-slate-900">حدث خطأ أثناء التحليل</h3>
+              <p className="text-slate-500 max-w-md mx-auto">{analysisError}</p>
+            </div>
+            <div className="flex gap-4 max-w-xs mx-auto">
+              <button 
+                onClick={() => setStep('upload')}
+                className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all"
+              >
+                تغيير الصورة
+              </button>
+              <button 
+                onClick={startAnalysis}
+                className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+              >
+                إعادة المحاولة
+              </button>
             </div>
           </motion.div>
         )}
