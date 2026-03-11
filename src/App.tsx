@@ -16,6 +16,7 @@ import Barcode from 'react-barcode';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import AiScanView from './components/AiScanView';
+import ChatAssistant from './components/ChatAssistant';
 
 const TRANSLATIONS = {
   ar: {
@@ -922,7 +923,7 @@ export default function App() {
               </div>
             </div>
           ) : activeTab === 'chat' ? (
-            <ChatView 
+            <ChatAssistant 
               messages={messages}
               isLoading={isLoading}
               input={input}
@@ -986,107 +987,6 @@ export default function App() {
           background: #CBD5E1;
         }
       `}} />
-    </div>
-  );
-}
-
-function ChatView({ 
-  messages, 
-  isLoading, 
-  input, 
-  setInput, 
-  handleSend, 
-  messagesEndRef, 
-  userName, 
-  setUserName, 
-  showNamePrompt, 
-  setShowNamePrompt, 
-  t, 
-  theme, 
-  lang 
-}: any) {
-  return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-4 custom-scrollbar">
-        {messages.map((msg: Message) => (
-          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] p-4 rounded-2xl shadow-sm select-text ${
-              msg.role === 'user' 
-                ? 'bg-blue-600 text-white rounded-tr-none' 
-                : theme === 'dark' ? 'bg-slate-800 text-white rounded-tl-none' : 'bg-white text-slate-900 rounded-tl-none'
-            }`}>
-              <div className="flex items-center gap-2 mb-1">
-                {msg.role === 'bot' ? <Bot size={14} /> : <User size={14} />}
-                <span className="text-[10px] font-bold opacity-70">
-                  {msg.role === 'bot' ? 'Roaya AI' : (userName || (lang === 'ar' ? 'أنت' : 'You'))}
-                </span>
-              </div>
-              <div className="text-sm leading-relaxed">
-                <Markdown remarkPlugins={[remarkGfm]}>{msg.content}</Markdown>
-              </div>
-              <div className="text-[8px] mt-2 opacity-50 text-right">
-                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
-            </div>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className={`p-4 rounded-2xl ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'} shadow-sm flex items-center gap-3`}>
-              <Loader2 size={16} className="animate-spin text-blue-600" />
-              <span className="text-xs text-slate-500">{t.processing}</span>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <div className={`p-4 border-t ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
-        {showNamePrompt && (
-          <div className={`mb-4 p-4 rounded-2xl ${theme === 'dark' ? 'bg-slate-800' : 'bg-blue-50'} flex items-center justify-between gap-4`}>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center">
-                <Sparkles size={16} />
-              </div>
-              <p className="text-xs font-bold text-slate-600">{t.name_prompt}</p>
-            </div>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                placeholder={t.enter_name}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-blue-500"
-              />
-              <button 
-                onClick={() => setShowNamePrompt(false)}
-                className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold"
-              >
-                {t.save}
-              </button>
-            </div>
-          </div>
-        )}
-        <form 
-          onSubmit={(e) => { e.preventDefault(); handleSend(e); }}
-          className="flex gap-2"
-        >
-          <input 
-            type="text" 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={t.type_placeholder}
-            className={`flex-1 ${theme === 'dark' ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'} rounded-2xl py-4 px-5 text-sm outline-none focus:border-blue-500 transition-all`}
-          />
-          <button 
-            type="submit"
-            disabled={isLoading || !input.trim()}
-            className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-100 transition-all disabled:opacity-50 disabled:shadow-none"
-          >
-            <Send size={24} className={lang === 'ar' ? 'rotate-180' : ''} />
-          </button>
-        </form>
-      </div>
     </div>
   );
 }

@@ -2,23 +2,23 @@ import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 
 // Robust API key retrieval - Tries environment variables first, then fallback
 const getApiKey = () => {
-  // 1. Try process.env (Standard for Node.js/Cloud Run/AI Studio)
-  // This is defined in vite.config.ts via define
-  let key = "";
+  // 1. Try import.meta.env (Standard for Vite/Client-side)
+  // This is the most reliable way in a Vite project
   try {
     // @ts-ignore
-    key = process.env.GEMINI_API_KEY || "";
-    if (key && key.length > 20 && !key.includes('your_api_key')) {
-      return key;
+    const viteKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (viteKey && viteKey.length > 20 && !viteKey.includes('your_api_key')) {
+      return viteKey;
     }
   } catch (e) {}
 
-  // 2. Try import.meta.env (Standard for Vite/Client-side)
+  // 2. Try process.env (Standard for Node.js/Cloud Run/AI Studio)
+  // This is defined in vite.config.ts via define
   try {
     // @ts-ignore
-    key = import.meta.env.VITE_GEMINI_API_KEY || "";
-    if (key && key.length > 20 && !key.includes('your_api_key')) {
-      return key;
+    const processKey = process.env.GEMINI_API_KEY;
+    if (processKey && processKey.length > 20 && !processKey.includes('your_api_key')) {
+      return processKey;
     }
   } catch (e) {}
 
@@ -41,6 +41,9 @@ export const OFFICIAL_APP_URL = "https://ai.studio/apps/a5f580ca-d9b1-4316-bec9-
 // Helper to get AI instance with current key
 const getAI = () => {
   const key = getApiKey();
+  if (!key) {
+    throw new Error("API_KEY_MISSING: مفتاح البرمجة (API Key) غير متوفر.");
+  }
   return new GoogleGenAI({ apiKey: key });
 };
 
@@ -108,7 +111,7 @@ export async function generateMedicalResponse(prompt: string) {
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-1.5-flash-latest",
       contents: [{ parts: [{ text: prompt }] }],
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
@@ -161,7 +164,7 @@ export async function analyzeEyeImage(imageData: string, userInfo: { name: strin
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-1.5-flash-latest",
       contents: {
         parts: [
           {
@@ -218,7 +221,7 @@ export async function analyzeEyeImage(imageData: string, userInfo: { name: strin
 export async function startChat() {
   const ai = getAI();
   return ai.chats.create({
-    model: "gemini-3-flash-preview",
+    model: "gemini-1.5-flash-latest",
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
     },
