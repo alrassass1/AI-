@@ -106,7 +106,7 @@ export async function generateMedicalResponse(prompt: string) {
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash-latest",
+      model: "gemini-3-flash-preview",
       contents: [{ parts: [{ text: prompt }] }],
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
@@ -157,9 +157,12 @@ export async function generateMedicalResponse(prompt: string) {
 
 export async function analyzeEyeImage(imageData: string, userInfo: { name: string, age: string, chronicDiseases: string }) {
   try {
+    if (!imageData || !imageData.includes('base64')) {
+      throw new Error("بيانات الصورة غير صالحة. يرجى إعادة التقاط الصورة.");
+    }
     const ai = getAI();
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash-latest",
+      model: "gemini-3-flash-preview",
       contents: {
         parts: [
           {
@@ -216,7 +219,7 @@ export async function analyzeEyeImage(imageData: string, userInfo: { name: strin
 export async function startChat() {
   const ai = getAI();
   return ai.chats.create({
-    model: "gemini-1.5-flash-latest",
+    model: "gemini-3-flash-preview",
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
     },

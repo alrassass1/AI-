@@ -588,55 +588,55 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
             className="space-y-8"
           >
             {/* Report Preview */}
-            <div id="report-to-print" ref={reportRef} className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-xl p-10 space-y-8 relative select-text">
+            <div id="report-to-print" ref={reportRef} className="bg-[#ffffff] rounded-[2.5rem] border border-[#e2e8f0] overflow-hidden p-10 space-y-8 relative select-text">
               {/* Report Header */}
-              <div className="flex justify-between items-start border-b border-slate-100 pb-8">
+              <div className="flex justify-between items-start border-b border-[#f1f5f9] pb-8">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                  <div className="w-16 h-16 bg-[#2563eb] rounded-2xl flex items-center justify-center text-[#ffffff]">
                     <Eye size={32} />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-black text-slate-900">مستشفيات رؤية</h1>
-                    <p className="text-xs text-blue-600 font-bold uppercase tracking-widest">تقرير الفحص الذكي (AI)</p>
+                    <h1 className="text-2xl font-black text-[#0f172a]">مستشفيات رؤية</h1>
+                    <p className="text-xs text-[#2563eb] font-bold uppercase tracking-widest">تقرير الفحص الذكي (AI)</p>
                   </div>
                 </div>
                 <div className="text-left">
-                  <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 inline-block">
+                  <div className="bg-[#f8fafc] p-3 rounded-2xl border border-[#f1f5f9] inline-block">
                     <Barcode value={fileNumber} height={40} width={1.5} fontSize={10} />
                   </div>
                 </div>
               </div>
 
               {/* Patient Info Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 bg-[#f8fafc] p-6 rounded-3xl border border-[#f1f5f9]">
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">اسم المريض</p>
-                  <p className="text-sm font-bold text-slate-900">{userInfo.name}</p>
+                  <p className="text-[10px] font-bold text-[#94a3b8] uppercase mb-1">اسم المريض</p>
+                  <p className="text-sm font-bold text-[#0f172a]">{userInfo.name}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">رقم الهاتف</p>
-                  <p className="text-sm font-bold text-slate-900" dir="ltr">{userInfo.phone}</p>
+                  <p className="text-[10px] font-bold text-[#94a3b8] uppercase mb-1">رقم الهاتف</p>
+                  <p className="text-sm font-bold text-[#0f172a]" dir="ltr">{userInfo.phone}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">العمر</p>
-                  <p className="text-sm font-bold text-slate-900">{userInfo.age} سنة</p>
+                  <p className="text-[10px] font-bold text-[#94a3b8] uppercase mb-1">العمر</p>
+                  <p className="text-sm font-bold text-[#0f172a]">{userInfo.age} سنة</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">رقم الملف</p>
-                  <p className="text-sm font-bold text-blue-600">{fileNumber}</p>
+                  <p className="text-[10px] font-bold text-[#94a3b8] uppercase mb-1">رقم الملف</p>
+                  <p className="text-sm font-bold text-[#2563eb]">{fileNumber}</p>
                 </div>
               </div>
 
               {/* Analysis Content */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-1 space-y-6">
-                  <div className="rounded-3xl overflow-hidden border-4 border-white shadow-lg">
+                  <div className="rounded-3xl overflow-hidden border-4 border-[#ffffff]">
                     <img src={image!} alt="Analyzed" className="w-full h-auto" />
                   </div>
                   <div className={`p-4 rounded-2xl border flex items-center gap-3 ${
-                    analysis.urgency === 'مرتفع' ? 'bg-red-50 border-red-100 text-red-700' :
-                    analysis.urgency === 'متوسط' ? 'bg-amber-50 border-amber-100 text-amber-700' :
-                    'bg-green-50 border-green-100 text-green-700'
+                    analysis.urgency === 'مرتفع' ? 'bg-[#fef2f2] border-[#fee2e2] text-[#991b1b]' :
+                    analysis.urgency === 'متوسط' ? 'bg-[#fffbeb] border-[#fef3c7] text-[#92400e]' :
+                    'bg-[#f0fdf4] border-[#dcfce7] text-[#166534]'
                   }`}>
                     <AlertCircle size={20} />
                     <div className="text-xs font-bold">مستوى الاستعجال: {analysis.urgency}</div>
@@ -645,40 +645,40 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
 
                 <div className="md:col-span-2 space-y-6">
                   <div className="space-y-2">
-                    <h4 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <CheckCircle2 className="text-blue-600" size={20} />
+                    <h4 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
+                      <CheckCircle2 className="text-[#2563eb]" size={20} />
                       التشخيص الأولي
                     </h4>
-                    <p className="text-slate-600 text-sm leading-relaxed bg-blue-50/30 p-4 rounded-2xl border border-blue-100/50">
+                    <p className="text-[#475569] text-sm leading-relaxed bg-[#eff6ff] p-4 rounded-2xl border border-[#dbeafe]">
                       {analysis.diagnosis}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">أجزاء العين المحددة</h4>
+                      <h4 className="text-xs font-bold text-[#94a3b8] uppercase tracking-widest">أجزاء العين المحددة</h4>
                       <div className="flex flex-wrap gap-2">
                         {analysis.eyeParts.map((part: string, i: number) => (
-                          <span key={i} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold">{part}</span>
+                          <span key={i} className="px-3 py-1 bg-[#f1f5f9] text-[#475569] rounded-full text-[10px] font-bold">{part}</span>
                         ))}
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">الأعراض المكتشفة</h4>
+                      <h4 className="text-xs font-bold text-[#94a3b8] uppercase tracking-widest">الأعراض المكتشفة</h4>
                       <div className="flex flex-wrap gap-2">
                         {analysis.symptoms.map((sym: string, i: number) => (
-                          <span key={i} className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-[10px] font-bold">{sym}</span>
+                          <span key={i} className="px-3 py-1 bg-[#fef2f2] text-[#dc2626] rounded-full text-[10px] font-bold">{sym}</span>
                         ))}
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">توصيات المساعد الذكي</h4>
+                    <h4 className="text-xs font-bold text-[#94a3b8] uppercase tracking-widest">توصيات المساعد الذكي</h4>
                     <ul className="space-y-2">
                       {analysis.recommendations.map((rec: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 shrink-0" />
+                        <li key={i} className="flex items-start gap-2 text-sm text-[#475569]">
+                          <div className="w-1.5 h-1.5 bg-[#3b82f6] rounded-full mt-1.5 shrink-0" />
                           {rec}
                         </li>
                       ))}
@@ -688,22 +688,22 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
               </div>
 
               {/* Detailed Report Section */}
-              <div className="pt-8 border-t border-slate-100">
-                <h4 className="text-lg font-bold text-slate-900 mb-4">التقرير الطبي المفصل</h4>
-                <div className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+              <div className="pt-8 border-t border-[#f1f5f9]">
+                <h4 className="text-lg font-bold text-[#0f172a] mb-4">التقرير الطبي المفصل</h4>
+                <div className="text-sm text-[#475569] leading-relaxed whitespace-pre-wrap">
                   {analysis.detailedReport}
                 </div>
               </div>
 
               {/* Report Footer */}
-              <div className="pt-8 mt-8 border-t border-slate-100 flex justify-between items-end text-[10px] text-slate-400">
+              <div className="pt-8 mt-8 border-t border-[#f1f5f9] flex justify-between items-end text-[10px] text-[#94a3b8]">
                 <div className="space-y-1">
                   <p>تاريخ الفحص: {new Date().toLocaleDateString('ar-YE')}</p>
                   <p>هذا التقرير تم توليده آلياً بواسطة نظام الذكاء الاصطناعي لمستشفيات رؤية.</p>
-                  <p className="font-bold text-red-500">ملاحظة: هذا التقرير استرشادي فقط ولا يغني عن الفحص السريري.</p>
+                  <p className="font-bold text-[#ef4444]">ملاحظة: هذا التقرير استرشادي فقط ولا يغني عن الفحص السريري.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <QrCode size={40} className="opacity-20" />
+                  <QrCode size={40} style={{ opacity: 0.2 }} />
                 </div>
               </div>
             </div>

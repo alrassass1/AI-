@@ -1,5 +1,34 @@
 @import "tailwindcss";
 
+:root {
+  /* Override Tailwind v4 oklch variables with hex values for html2canvas compatibility */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-900: #0f172a;
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-600: #2563eb;
+  --color-red-50: #fef2f2;
+  --color-red-100: #fee2e2;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-700: #b45309;
+  --color-green-50: #f0fdf4;
+  --color-green-100: #dcfce7;
+  --color-green-700: #15803d;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+  --tw-border-color: #e2e8f0;
+}
+
 @layer base {
   @media print {
     body * {

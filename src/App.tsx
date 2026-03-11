@@ -802,12 +802,6 @@ export default function App() {
                 <h1 className={`text-sm md:text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'} leading-tight tracking-tight`}>
                   {t.welcome_to}
                 </h1>
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 ${isApiKeySet ? 'bg-green-500 animate-pulse' : 'bg-red-500'} rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]`} />
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                    {isApiKeySet ? (lang === 'ar' ? 'المساعد متصل' : 'AI Online') : (lang === 'ar' ? 'المساعد أوفلاين' : 'AI Offline')}
-                  </span>
-                </div>
               </div>
             </div>
           </div>
@@ -815,19 +809,6 @@ export default function App() {
           <div className="flex items-center gap-2 md:gap-4">
             {/* Action Icons */}
             <div className="flex items-center gap-2">
-              {/* Copy Link Button */}
-              <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert(lang === 'ar' ? 'تم نسخ رابط التطبيق بنجاح!' : 'App link copied successfully!');
-                }}
-                className={`p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-blue-400' : 'border-slate-200 hover:bg-slate-50 text-blue-600'} transition-all flex items-center gap-2 active:scale-90`}
-                title={lang === 'ar' ? 'نسخ رابط التطبيق' : 'Copy App Link'}
-              >
-                <Share2 size={20} />
-                <span className="hidden lg:block text-xs font-black">{lang === 'ar' ? 'نسخ الرابط' : 'Copy Link'}</span>
-              </button>
-
               {/* Language Toggle */}
               <button 
                 onClick={toggleLang}
@@ -846,65 +827,6 @@ export default function App() {
               >
                 {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
               </button>
-
-              {/* Full Screen Toggle */}
-              <button 
-                onClick={() => {
-                  if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
-                  } else {
-                    if (document.exitFullscreen) {
-                      document.exitFullscreen();
-                    }
-                  }
-                }}
-                className={`hidden md:flex p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-200 hover:bg-slate-50 text-slate-600'} transition-all active:scale-90`}
-                title={lang === 'ar' ? 'ملء الشاشة' : 'Full Screen'}
-              >
-                <Maximize size={20} />
-              </button>
-
-              {/* Notifications */}
-              <div className="relative">
-                <button 
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className={`p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-blue-400' : 'border-slate-200 hover:bg-slate-50 text-blue-600'} transition-all relative active:scale-90`}
-                  title={t.notifications}
-                >
-                  <Bell size={20} />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-                </button>
-                
-                <AnimatePresence>
-                  {showNotifications && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className={`absolute top-full ${lang === 'ar' ? 'left-0' : 'right-0'} mt-3 w-72 ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-2xl shadow-2xl border p-4 z-50`}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">{t.notifications}</h4>
-                        <button onClick={() => setShowNotifications(false)} className="text-slate-400 hover:text-slate-600"><X size={14} /></button>
-                      </div>
-                      <div className="text-center py-6 space-y-2">
-                        <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300">
-                          <Bell size={20} />
-                        </div>
-                        <p className="text-[10px] text-slate-500 font-bold">{t.no_notifications}</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 ${theme === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'} rounded-full text-xs font-medium`}>
-                <Star size={14} className="text-amber-500 fill-amber-500" />
-                {lang === 'ar' ? 'أعلى تقييم في جراحة العيون' : 'Top Rated in Eye Surgery'}
-              </div>
-              <div className={`w-10 h-10 ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-50'} rounded-2xl flex items-center justify-center border ${theme === 'dark' ? 'border-slate-700' : 'border-white'} shadow-sm`}>
-                <User size={20} />
-              </div>
             </div>
           </div>
         </header>
@@ -1657,75 +1579,7 @@ function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: 
             </div>
           </div>
 
-          <div className={`${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-[2.5rem] border p-8 space-y-6 shadow-sm`}>
-            <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
-              <Sparkles className="text-blue-600" />
-              {lang === 'ar' ? 'حالة اتصال الذكاء الاصطناعي' : 'AI Connection Status'}
-            </h3>
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-              <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${isApiKeySet ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-                <span className="text-sm font-bold text-slate-700">
-                  {isApiKeySet 
-                    ? (lang === 'ar' ? 'الذكاء الاصطناعي متصل وجاهز' : 'AI Connected and Ready') 
-                    : (lang === 'ar' ? 'الذكاء الاصطناعي غير متصل' : 'AI Not Connected')}
-                </span>
-              </div>
-              {isApiKeySet && (
-                <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase">
-                  {lang === 'ar' ? 'مفتاح مدمج' : 'Embedded Key'}
-                </div>
-              )}
-            </div>
-            <p className="text-[10px] text-slate-400 font-bold leading-relaxed">
-              {lang === 'ar' 
-                ? 'ملاحظة: إذا كان المفتاح غير مفعل، سيعمل المساعد في وضع الأوفلاين باستخدام قاعدة البيانات المحلية المدمجة.' 
-                : 'Note: If the key is not active, the assistant will work in offline mode using the built-in local database.'}
-            </p>
-          </div>
-
-          <div className={`${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-[2.5rem] border p-8 space-y-6 shadow-sm`}>
-            <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
-              <Share2 className="text-blue-600" />
-              {lang === 'ar' ? 'رابط التطبيق' : 'App Link'}
-            </h3>
-            <div className="flex items-center gap-2 p-4 bg-slate-900 rounded-2xl border border-slate-800">
-              <input 
-                type="text" 
-                readOnly 
-                value={window.location.href}
-                className="flex-1 bg-transparent text-blue-300 text-xs font-mono outline-none"
-              />
-              <button 
-                onClick={() => copyToClipboard(window.location.href)}
-                className="p-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/40 transition-all"
-              >
-                <Copy size={16} />
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-500 font-bold">
-              {lang === 'ar' ? 'يمكنك نسخ هذا الرابط ومشاركته مع المرضى أو استخدامه في موقعك.' : 'You can copy this link and share it with patients or use it on your site.'}
-            </p>
-          </div>
-
-          <div className={`${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-[2.5rem] border p-8 space-y-6 shadow-sm`}>
-            <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
-              <ExternalLink className="text-blue-600" />
-              {lang === 'ar' ? 'رابط مباشر للمعاينة' : 'Direct Preview Link'}
-            </h3>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              {lang === 'ar' ? 'يمكنك أيضاً استخدام هذا الزر الاحترافي لفتح البرنامج في نافذة جديدة مباشرة.' : 'You can also use this professional button to open the program in a new window directly.'}
-            </p>
-            <a 
-              href={appUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-3"
-            >
-              <Eye size={20} />
-              {lang === 'ar' ? 'فتح البرنامج في نافذة جديدة' : 'Open Program in New Window'}
-            </a>
-          </div>
+          {/* Removed developer sections */}
         </div>
 
       <div className="space-y-6">
