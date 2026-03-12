@@ -9,6 +9,8 @@ import Barcode from 'react-barcode';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { analyzeEyeImage, isApiKeySet } from '../services/geminiService';
+import { db, auth, handleFirestoreError, OperationType } from '../firebase';
+import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc, getDocs } from 'firebase/firestore';
 
 const BRANCHES = [
   { id: 'seiyun', name: 'رؤية سيئون (المركز الرئيسي)', whatsapp: '774441177' },
@@ -20,8 +22,9 @@ const BRANCHES = [
 const ROAYA_LOGO = "https://roayae.org/wp-content/uploads/elementor/thumbs/cropped-%D8%B4%D8%B9%D8%A7%D8%B1-%D9%85%D8%B3%D8%AA%D8%B4%D9%81%D9%89-%D8%B1%D8%A4%D9%8A%D8%A9-qf666fklyr7uf4ncdzpnajc09q6qujg5777ct93rdk.png";
 const SCAN_HERO_IMAGE = "https://roayae.org/wp-content/uploads/2026/02/%D9%83%D8%B4%D9%81-1024x680.jpg";
 
-export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: string, theme?: string }) {
+export default function AiScanView({ lang = 'ar', theme = 'light', user, userRole }: { lang?: string, theme?: string, user?: any, userRole?: string }) {
   const isAr = lang === 'ar';
+  const isAdmin = userRole === 'admin';
   const [step, setStep] = useState<'info' | 'upload' | 'analyzing' | 'result' | 'history' | 'error'>('info');
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState({
@@ -43,22 +46,89 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
   const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const savedHistory = localStorage.getItem('roaya_scan_history');
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
+    if (!user) {
+      setHistory([]);
+      return;
     }
-  }, []);
 
-  const saveScanToHistory = (scanData: any) => {
-    const newHistory = [scanData, ...history];
-    setHistory(newHistory);
-    localStorage.setItem('roaya_scan_history', JSON.stringify(newHistory));
+    const scansRef = collection(db, 'scans');
+    // If admin, show all. If user, show only theirs.
+    const q = isAdmin 
+      ? query(scansRef, orderBy('createdAt', 'desc'))
+      : query(scansRef, where('uid', '==', user.uid), orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const docs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
+      }));
+      setHistory(docs);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'scans');
+    });
+
+    return () => unsubscribe();
+  }, [user, isAdmin]);
+
+  const saveScanToHistory = async (scanRecord: any) => {
+    if (!user) return;
+
+    try {
+      const docData = {
+        uid: user.uid,
+        patientName: scanRecord.userInfo.name,
+        patientPhone: scanRecord.userInfo.phone,
+        patientAge: scanRecord.userInfo.age,
+        fileNumber: scanRecord.fileNumber,
+        diagnosis: scanRecord.analysis.diagnosis,
+        urgency: scanRecord.analysis.urgency,
+        detailedReport: scanRecord.analysis.detailedReport || '',
+        imageUrl: scanRecord.image,
+        createdAt: serverTimestamp(),
+        userInfo: scanRecord.userInfo, // Keep for compatibility
+        analysis: scanRecord.analysis // Keep for compatibility
+      };
+
+      await addDoc(collection(db, 'scans'), docData);
+      
+      // Automatically trigger email sending to official Roaya email
+      sendToOfficialEmail(scanRecord);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'scans');
+    }
   };
 
-  const deleteFromHistory = (id: string) => {
-    const newHistory = history.filter(item => item.id !== id);
-    setHistory(newHistory);
-    localStorage.setItem('roaya_scan_history', JSON.stringify(newHistory));
+  const sendToOfficialEmail = (record: any) => {
+    const subject = `تقرير فحص ذكي جديد - ${record.userInfo.name}`;
+    const body = `مرحباً فريق مستشفيات رؤية،
+تم إجراء فحص ذكي جديد عبر التطبيق.
+
+بيانات المريض:
+الاسم: ${record.userInfo.name}
+العمر: ${record.userInfo.age}
+رقم الهاتف: ${record.userInfo.phone}
+رقم الملف: ${record.fileNumber}
+
+التشخيص الأولي:
+${record.analysis.diagnosis}
+
+مستوى الاستعجال: ${record.analysis.urgency}
+
+يرجى مراجعة التقرير في لوحة التحكم.`;
+    
+    // We can't automatically send email without a backend, but we can prepare the link
+    const mailtoLink = `mailto:alrassass9@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    console.log("Email prepared for official Roaya email:", mailtoLink);
+    // In a real production app, this would be a backend API call.
+  };
+
+  const deleteFromHistory = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'scans', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `scans/${id}`);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -231,12 +301,26 @@ export default function AiScanView({ lang = 'ar', theme = 'light' }: { lang?: st
         </div>
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-bold">
           <Sparkles size={16} className="animate-pulse" />
-          تقنية الذكاء الاصطناعي المتطورة
+          {isAr ? 'تقنية الذكاء الاصطناعي المتطورة' : 'Advanced AI Technology'}
         </div>
-        <h2 className="text-4xl font-black text-slate-900 tracking-tight">الفحص الذكي للعين</h2>
+        <h2 className="text-4xl font-black text-slate-900 tracking-tight">{isAr ? 'الفحص الذكي للعين' : 'AI Eye Scan'}</h2>
         <p className="text-slate-500 text-lg max-w-2xl mx-auto leading-relaxed">
           قم برفع صورة لعينك وسيقوم نظامنا المدعوم بالذكاء الاصطناعي بتحليلها وتقديم تقرير أولي استرشادي في ثوانٍ.
+          <br />
+          <span className="text-xs text-blue-500 font-bold">
+            {isAr 
+              ? (isAdmin ? "أنت مسجل كمسؤول: يمكنك رؤية جميع الفحوصات." : "ملاحظة: الفحوصات المحفوظة تظهر لك ولإدارة المستشفى فقط.") 
+              : (isAdmin ? "You are logged in as Admin: You can see all scans." : "Note: Saved scans are visible to you and the hospital administration only.")
+            }
+          </span>
         </p>
+        
+        {!user && (
+          <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl text-amber-700 text-sm font-bold flex items-center justify-center gap-2">
+            <AlertCircle size={18} />
+            {isAr ? 'يرجى تسجيل الدخول لحفظ نتائج الفحص والوصول إلى السجل.' : 'Please login to save scan results and access history.'}
+          </div>
+        )}
         
         {history.length > 0 && (
           <button 

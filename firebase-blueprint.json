@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "Scan": {
+      "title": "Eye Scan",
+      "description": "A record of an AI-powered eye scan analysis.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The unique ID of the user who performed the scan."
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Name of the patient."
+        },
+        "patientPhone": {
+          "type": "string",
+          "description": "Phone number of the patient."
+        },
+        "patientAge": {
+          "type": "string",
+          "description": "Age of the patient."
+        },
+        "fileNumber": {
+          "type": "string",
+          "description": "Hospital file number."
+        },
+        "diagnosis": {
+          "type": "string",
+          "description": "AI generated diagnosis."
+        },
+        "urgency": {
+          "type": "string",
+          "description": "Urgency level of the condition."
+        },
+        "detailedReport": {
+          "type": "string",
+          "description": "Full markdown report."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL or base64 of the scanned image."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the scan was performed."
+        }
+      },
+      "required": ["uid", "patientName", "diagnosis", "createdAt"]
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "User profile information and roles.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "User's email address."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "user"],
+          "description": "User's role in the system."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User's display name."
+        }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/scans/{scanId}": {
+      "schema": "Scan",
+      "description": "Collection of all eye scan results."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile data."
+    }
+  }
+}

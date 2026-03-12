@@ -2,6 +2,8 @@
   "name": "AI :رؤية لطب وجراحة العيون والشبكية",
   "description": "المساعد الذكي لمستشفيات رؤية لطب وجراحة العيون والشبكية - للإجابة على استفساراتكم الطبية وتوجيهكم.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "geolocation",
+    "microphone"
   ]
 }

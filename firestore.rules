@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - email: string (required)
+    //   - role: string (required, 'admin' | 'user')
+    //   - displayName: string (optional)
+    //
+    // Collection: scans
+    // Document ID: {scanId}
+    // Fields:
+    //   - uid: string (required) - Owner of the scan
+    //   - patientName: string (required)
+    //   - patientPhone: string
+    //   - patientAge: string
+    //   - fileNumber: string
+    //   - diagnosis: string (required)
+    //   - urgency: string
+    //   - detailedReport: string
+    //   - imageUrl: string
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "alrassass9@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Validation Functions
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.email is string &&
+             data.role in ['admin', 'user'] &&
+             (!('displayName' in data) || data.displayName is string);
+    }
+
+    function isValidScan(data) {
+      return data.uid is string &&
+             data.patientName is string && data.patientName.size() > 0 && data.patientName.size() < 100 &&
+             data.diagnosis is string && data.diagnosis.size() > 0 &&
+             data.createdAt is timestamp &&
+             (!('patientPhone' in data) || data.patientPhone is string) &&
+             (!('patientAge' in data) || data.patientAge is string) &&
+             (!('fileNumber' in data) || data.fileNumber is string) &&
+             (!('urgency' in data) || data.urgency is string) &&
+             (!('detailedReport' in data) || data.detailedReport is string) &&
+             (!('imageUrl' in data) || data.imageUrl is string);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
+                    (isOwner(userId) && request.resource.data.role == 'user' || isAdmin());
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && 
+                    (isOwner(userId) && request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /scans/{scanId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidScan(request.resource.data) && 
+                    request.resource.data.uid == request.auth.uid;
+      allow update: if false; // Scans are immutable for now
+      allow delete: if isAdmin();
+    }
+  }
+}

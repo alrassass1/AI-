@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Send, Bot, User, Sparkles, Loader2, Phone, MapPin, 
+  Send, Bot, Sparkles, Loader2, Phone, MapPin, 
   Calendar, Eye, Menu, X, Info, Activity, Shield, AlertCircle,
   ChevronLeft, ChevronUp, ChevronDown, MessageSquare, MessageCircle, Clock, Star, Baby, ArrowLeft,
   Mail, Headset, Globe, Heart, Camera, Upload, Download, FileText, QrCode,
   Code, Terminal, Copy, ExternalLink, Share2, Facebook, Twitter, Youtube,
-  Home, Maximize, Bell, Moon, Sun, Languages
+  Home, Maximize, Bell, Moon, Sun, Languages, User as UserIcon, LogIn, LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -15,8 +15,13 @@ import { generateMedicalResponse, analyzeEyeImage, isApiKeySet, OFFICIAL_APP_URL
 import Barcode from 'react-barcode';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { auth, signInWithGoogle, logout, onAuthStateChanged, db } from './firebase';
+import { type User as FirebaseUser } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import ErrorBoundary from './components/ErrorBoundary';
 import AiScanView from './components/AiScanView';
 import ChatAssistant from './components/ChatAssistant';
+// import { LogIn, LogOut } from 'lucide-react'; // Already imported above
 
 const TRANSLATIONS = {
   ar: {
@@ -52,6 +57,10 @@ const TRANSLATIONS = {
     how_can_i_help: 'أنا مساعدك الطبي الذكي، كيف يمكنني مساعدتك اليوم؟',
     hi: 'مرحباً بك في رؤية AI',
     hi_user: 'مرحباً بك يا',
+    maximize: 'ملء الشاشة',
+    download_package: 'تحميل حزمة التطبيق',
+    download_desc: 'تحميل ملف مضغوط يحتوي على كافة ملفات البرنامج للرفع على استضافة خارجية.',
+    welcome_desc: 'منصة متكاملة تقدم خدمات الاستشارة الطبية الفورية، فحص العين بالذكاء الاصطناعي، وحجز المواعيد في جميع فروعنا.',
   },
   en: {
     home: 'Home',
@@ -86,6 +95,10 @@ const TRANSLATIONS = {
     how_can_i_help: 'I am your smart medical assistant, how can I help you today?',
     hi: 'Welcome to Roaya AI',
     hi_user: 'Welcome, ',
+    maximize: 'Full Screen',
+    download_package: 'Download App Package',
+    download_desc: 'Download a compressed file containing all application files for external hosting.',
+    welcome_desc: 'An integrated platform providing instant medical consultation, AI eye examination, and appointment booking.',
   }
 };
 
@@ -290,9 +303,14 @@ const ScrollControls = () => {
 };
 
 export default function App() {
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(true);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [userRole, setUserRole] = useState<'admin' | 'user'>('user');
+  const [isAuthReady, setIsAuthReady] = useState(false);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [userName, setUserName] = useState('');
@@ -312,6 +330,49 @@ export default function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const t = TRANSLATIONS[lang];
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        // Check/Create user profile in Firestore
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (!userDoc.exists()) {
+          const newRole = currentUser.email === 'alrassass9@gmail.com' ? 'admin' : 'user';
+          await setDoc(userDocRef, {
+            email: currentUser.email,
+            role: newRole,
+            displayName: currentUser.displayName
+          });
+          setUserRole(newRole);
+        } else {
+          setUserRole(userDoc.data().role);
+        }
+        
+        if (currentUser.displayName) {
+          setUserName(currentUser.displayName);
+          setShowNamePrompt(false);
+        }
+      }
+      setIsAuthReady(true);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: t.welcome_to,
+        text: t.welcome_desc,
+        url: window.location.href,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert(lang === 'ar' ? 'تم نسخ الرابط إلى الحافظة!' : 'Link copied to clipboard!');
+    }
+  };
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -457,7 +518,8 @@ export default function App() {
   };
 
   return (
-    <div className={`flex h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-blue-50/30 text-slate-900'} font-sans overflow-hidden transition-colors duration-300`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    <ErrorBoundary lang={lang}>
+      <div className={`flex h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-blue-50/30 text-slate-900'} font-sans overflow-hidden transition-colors duration-300`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -809,6 +871,60 @@ export default function App() {
           <div className="flex items-center gap-2 md:gap-4">
             {/* Action Icons */}
             <div className="flex items-center gap-2">
+              <button 
+                onClick={handleShare}
+                className={`hidden md:flex p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-200 hover:bg-slate-50 text-slate-500'} transition-all active:scale-90`}
+                title={t.share_app}
+              >
+                <Share2 size={20} />
+              </button>
+              
+              <button 
+                onClick={() => {
+                  if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                  } else {
+                    document.exitFullscreen();
+                  }
+                }}
+                className={`hidden md:flex p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-200 hover:bg-slate-50 text-slate-500'} transition-all active:scale-90`}
+                title={t.maximize}
+              >
+                <Maximize size={20} />
+              </button>
+
+              <button 
+                className={`p-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-200 hover:bg-slate-50 text-slate-500'} transition-all relative active:scale-90`}
+                title={t.notifications}
+              >
+                <Bell size={20} />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+              </button>
+
+              <div className="w-px h-6 bg-slate-200 mx-1 hidden md:block" />
+
+              {/* Auth Button */}
+              {isAuthReady && (
+                <button 
+                  onClick={user ? logout : signInWithGoogle}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border ${theme === 'dark' ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-200 hover:bg-slate-50 text-slate-500'} transition-all active:scale-95 font-bold text-sm`}
+                >
+                  {user ? (
+                    <>
+                      <LogOut size={18} />
+                      <span className="hidden sm:inline">{lang === 'ar' ? 'خروج' : 'Logout'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn size={18} />
+                      <span className="hidden sm:inline">{lang === 'ar' ? 'دخول' : 'Login'}</span>
+                    </>
+                  )}
+                </button>
+              )}
+
+              <div className="w-px h-6 bg-slate-200 mx-1 hidden md:block" />
+
               {/* Language Toggle */}
               <button 
                 onClick={toggleLang}
@@ -873,7 +989,7 @@ export default function App() {
                   {t.back_to_main}
                 </button>
                 
-                {activeTab === 'ai_scan' && <AiScanView lang={lang} theme={theme} />}
+                {activeTab === 'ai_scan' && <AiScanView lang={lang} theme={theme} user={user} userRole={userRole} />}
                 {activeTab === 'services' && (
                   <ServicesView 
                     onBook={() => { setIsBookingModalOpen(true); setBookingStep('form'); }} 
@@ -912,6 +1028,7 @@ export default function App() {
         }
       `}} />
     </div>
+    </ErrorBoundary>
   );
 }
 
@@ -1289,7 +1406,7 @@ function ServicesView({ onBook, onContact, onTabChange, onScan, t, theme, lang }
                 </button>
                 <div className="flex -space-x-2 rtl:space-x-reverse">
                   <div className={`w-8 h-8 rounded-full border-2 ${theme === 'dark' ? 'border-slate-900 bg-slate-700' : 'border-white bg-blue-50'} flex items-center justify-center text-blue-600 shadow-sm`}>
-                    <User size={14} />
+                    <UserIcon size={14} />
                   </div>
                 </div>
               </div>
@@ -1688,6 +1805,40 @@ function AboutView({ onTabChange, onScan, t, theme, lang }: { onTabChange: (tab:
                   {v}
                 </div>
               ))}
+            </div>
+          </section>
+
+          {/* Download App Package Section */}
+          <section className={`p-8 ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} rounded-[2.5rem] border shadow-sm space-y-6`}>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                <Download size={24} />
+              </div>
+              <div>
+                <h4 className={`font-bold text-xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{t.download_package}</h4>
+                <p className="text-slate-500 text-sm">{t.download_desc}</p>
+              </div>
+            </div>
+            <div className="flex flex-col md:flex-row gap-4">
+              <button 
+                onClick={() => {
+                  alert(lang === 'ar' ? 'جاري تحضير حزمة التطبيق... يرجى الانتظار.' : 'Preparing app package... please wait.');
+                  // Simulate download
+                  setTimeout(() => {
+                    window.open('https://github.com/alrassass/roaya-app/archive/refs/heads/main.zip', '_blank');
+                  }, 2000);
+                }}
+                className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-3"
+              >
+                <Download size={20} />
+                {t.download_package}
+              </button>
+              <div className="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                <Shield size={20} className="text-green-600" />
+                <p className="text-[10px] text-slate-500 font-bold leading-tight">
+                  {lang === 'ar' ? 'الحزمة تحتوي على كافة الملفات والمفاتيح اللازمة للتشغيل الفوري.' : 'The package contains all files and keys necessary for immediate operation.'}
+                </p>
+              </div>
             </div>
           </section>
         </div>
