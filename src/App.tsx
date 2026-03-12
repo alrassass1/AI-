@@ -1793,6 +1793,54 @@ function AboutView({ onTabChange, onScan, t, theme, lang }: { onTabChange: (tab:
             </div>
           </div>
 
+          <section className={`p-8 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-slate-900 border-slate-900'} rounded-[2.5rem] text-white space-y-6 shadow-xl`}>
+            <div className="flex items-center justify-between">
+              <h4 className="text-xl font-bold flex items-center gap-3">
+                <Download className="text-blue-400" />
+                {lang === 'ar' ? 'تصدير ونشر البرنامج' : 'Export & Deploy Program'}
+              </h4>
+              <div className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-[10px] font-bold uppercase tracking-widest border border-blue-500/30">
+                Standalone Ready
+              </div>
+            </div>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              {lang === 'ar' 
+                ? 'هذا البرنامج مصمم ليعمل بشكل مستقل على أي استضافة خارجية (مثل Namecheap أو HostGator). يمكنك تصدير الكود المصدري بالكامل ونقله إلى خادمك الخاص.' 
+                : 'This program is designed to run independently on any external hosting (like Namecheap or HostGator). You can export the full source code and move it to your own server.'}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-2">
+                <p className="text-xs font-bold text-blue-400">{lang === 'ar' ? 'خطوات التصدير:' : 'Export Steps:'}</p>
+                <ul className="text-[10px] text-slate-400 space-y-1 list-disc list-inside">
+                  <li>{lang === 'ar' ? 'من القائمة العلوية، اختر "Settings".' : 'From the top menu, select "Settings".'}</li>
+                  <li>{lang === 'ar' ? 'اختر "Export to GitHub" أو "Download ZIP".' : 'Choose "Export to GitHub" or "Download ZIP".'}</li>
+                  <li>{lang === 'ar' ? 'قم برفع الملفات إلى استضافتك الخاصة.' : 'Upload the files to your own hosting.'}</li>
+                </ul>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-2">
+                <p className="text-xs font-bold text-blue-400">{lang === 'ar' ? 'متطلبات التشغيل:' : 'Requirements:'}</p>
+                <ul className="text-[10px] text-slate-400 space-y-1 list-disc list-inside">
+                  <li>{lang === 'ar' ? 'استضافة تدعم Node.js أو ملفات Static.' : 'Hosting that supports Node.js or Static files.'}</li>
+                  <li>{lang === 'ar' ? 'إضافة مفتاح API في ملف .env' : 'Add API Key in .env file.'}</li>
+                  <li>{lang === 'ar' ? 'ربط الدومين الخاص بك.' : 'Connect your custom domain.'}</li>
+                </ul>
+              </div>
+            </div>
+            <button 
+              onClick={() => {
+                const subject = lang === 'ar' ? 'طلب تصدير برنامج مستشفيات رؤية' : 'Roaya Hospital App Export Request';
+                const body = lang === 'ar' 
+                  ? 'أرغب في الحصول على نسخة كاملة من الكود المصدري لنقلها إلى استضافة خارجية.' 
+                  : 'I would like to get a full copy of the source code to move it to external hosting.';
+                window.open(`mailto:alrassass9@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+              }}
+              className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-600/20"
+            >
+              <Download size={20} />
+              {lang === 'ar' ? 'تحميل ملفات المشروع (ZIP)' : 'Download Project Files (ZIP)'}
+            </button>
+          </section>
+
           <section className={`p-8 ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-900'} rounded-[2.5rem] text-white space-y-6`}>
             <h4 className="text-xl font-bold flex items-center gap-3">
               <Sparkles className="text-blue-400" />

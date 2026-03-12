@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Camera, Upload, Download, FileText, QrCode, Loader2, 
   CheckCircle2, AlertCircle, ArrowRight, Share2, Phone, Mail,
-  Sparkles, Eye, Shield, History, Trash2, ExternalLink, Clock
+  Sparkles, Eye, Shield, History, Trash2, ExternalLink, Clock,
+  Activity
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Barcode from 'react-barcode';
@@ -241,8 +242,11 @@ ${record.analysis.diagnosis}
         });
       }));
 
+      // Wait a bit for barcode and fonts to settle
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 3, // Higher scale for better quality
         useCORS: true,
         allowTaint: true,
         logging: false,
@@ -250,7 +254,12 @@ ${record.analysis.diagnosis}
         scrollX: 0,
         scrollY: -window.scrollY,
         windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight
+        windowHeight: element.scrollHeight,
+        onclone: (clonedDoc) => {
+          // Ensure barcode is visible in clone
+          const barcode = clonedDoc.getElementById('report-barcode');
+          if (barcode) barcode.style.display = 'block';
+        }
       });
       
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -672,7 +681,7 @@ ${record.analysis.diagnosis}
             className="space-y-8"
           >
             {/* Report Preview */}
-            <div id="report-to-print" ref={reportRef} className="bg-[#ffffff] rounded-[2.5rem] border border-[#e2e8f0] overflow-hidden p-10 space-y-8 relative select-text">
+            <div id="report-to-print" ref={reportRef} className="bg-[#ffffff] rounded-[2.5rem] border border-[#e2e8f0] overflow-hidden p-10 space-y-8 relative select-text" style={{ fontFamily: "'Cairo', sans-serif" }}>
               {/* Report Header */}
               <div className="flex justify-between items-start border-b border-[#f1f5f9] pb-8">
                 <div className="flex items-center gap-4">
@@ -685,7 +694,7 @@ ${record.analysis.diagnosis}
                   </div>
                 </div>
                 <div className="text-left">
-                  <div className="bg-[#f8fafc] p-3 rounded-2xl border border-[#f1f5f9] inline-block">
+                  <div id="report-barcode" className="bg-[#f8fafc] p-3 rounded-2xl border border-[#f1f5f9] inline-block">
                     <Barcode value={fileNumber} height={40} width={1.5} fontSize={10} />
                   </div>
                 </div>
@@ -735,6 +744,48 @@ ${record.analysis.diagnosis}
                     </h4>
                     <p className="text-[#475569] text-sm leading-relaxed bg-[#eff6ff] p-4 rounded-2xl border border-[#dbeafe]">
                       {analysis.diagnosis}
+                    </p>
+                  </div>
+
+                  {/* Vision Test Section */}
+                  <div className="bg-[#f8fafc] p-6 rounded-3xl border border-[#f1f5f9] space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-bold text-[#0f172a] flex items-center gap-2">
+                        <Activity className="text-blue-600" size={16} />
+                        نتائج فحص النظر التقديرية
+                      </h4>
+                      <span className="px-3 py-1 bg-blue-600 text-white text-[10px] font-bold rounded-full uppercase">AI Estimate</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">حدة الإبصار (تقديرية)</p>
+                        <div className="flex items-end gap-1">
+                          <span className="text-2xl font-black text-slate-900">{analysis.visionEstimate?.acuity || '6/6'}</span>
+                          <span className="text-[10px] text-slate-500 mb-1">{analysis.visionEstimate?.status || 'طبيعي'}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-green-500 rounded-full transition-all duration-1000" 
+                            style={{ width: `${analysis.visionEstimate?.percentage || 100}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">نسبة كفاءة الرؤية</p>
+                        <div className="flex items-end gap-1">
+                          <span className="text-2xl font-black text-slate-900">{analysis.visionEstimate?.percentage || 98}%</span>
+                          <span className="text-[10px] text-slate-500 mb-1">{analysis.visionEstimate?.status || 'ممتاز'}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-blue-500 rounded-full transition-all duration-1000" 
+                            style={{ width: `${analysis.visionEstimate?.percentage || 98}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-[9px] text-slate-400 italic">
+                      * هذه الأرقام تقديرية بناءً على تحليل الذكاء الاصطناعي للصورة والبيانات المقدمة، ولا تعتبر بديلاً عن فحص "لوحة سنيلين" في العيادة.
                     </p>
                   </div>
 

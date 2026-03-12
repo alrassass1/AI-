@@ -3,7 +3,6 @@ import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 // Robust API key retrieval - Tries environment variables first, then fallback
 const getApiKey = () => {
   // 1. Try import.meta.env (Standard for Vite/Client-side)
-  // This is the most reliable way in a Vite project
   try {
     // @ts-ignore
     const viteKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -13,7 +12,6 @@ const getApiKey = () => {
   } catch (e) {}
 
   // 2. Try process.env (Standard for Node.js/Cloud Run/AI Studio)
-  // This is defined in vite.config.ts via define
   try {
     // @ts-ignore
     const processKey = process.env.GEMINI_API_KEY;
@@ -21,9 +19,15 @@ const getApiKey = () => {
       return processKey;
     }
   } catch (e) {}
+  
+  // 3. Try global process (some environments)
+  try {
+    // @ts-ignore
+    if (typeof process !== 'undefined' && process.env && process.env.GEMINI_API_KEY) {
+      return process.env.GEMINI_API_KEY;
+    }
+  } catch (e) {}
 
-  // 3. Hardcoded fallback (Removed for security as requested)
-  // The user should set the key in the environment variables
   return "";
 };
 
@@ -96,7 +100,22 @@ const LOCAL_KNOWLEDGE: Record<string, string> = {
   "قرنية": "نقوم بعلاج أمراض القرنية بما في ذلك القرنية المخروطية، ونقدم عمليات تثبيت القرنية وزراعة القرنية بأحدث الأساليب.",
   "جفاف": "علاج جفاف العين يتوفر لدينا عبر قطرات متخصصة وسدادات القنوات الدمعية وتقنيات حديثة لتحفيز الغدد الدمعية.",
   "حول": "نعالج حالات الحول لدى الأطفال والكبار جراحياً ووظيفياً بأيدي استشاريين متخصصين.",
-  "طوارئ": "نستقبل حالات طوارئ العيون في فروعنا خلال ساعات الدوام الرسمي. في حالات الطوارئ القصوى خارج أوقات الدوام، يرجى التوجه لأقرب مستشفى عام أو التواصل مع أرقام الطوارئ الخاصة بنا."
+  "طوارئ": "نستقبل حالات طوارئ العيون في فروعنا خلال ساعات الدوام الرسمي. في حالات الطوارئ القصوى خارج أوقات الدوام، يرجى التوجه لأقرب مستشفى عام أو التواصل مع أرقام الطوارئ الخاصة بنا.",
+  "ضغط العين": "ارتفاع ضغط العين (الجلوكوما أو المياه الزرقاء) هو مرض صامت قد يؤدي لتلف العصب البصري. نوفر في رؤية أحدث أجهزة قياس الضغط وتصوير العصب البصري (OCT) وعلاجات الليزر والجراحة.",
+  "ظفرة": "الظفرة هي نمو لحمي على ملتحمة العين. نقوم في مستشفيات رؤية بإزالتها جراحياً مع زراعة غشاء مخاطي لضمان عدم عودتها مرة أخرى وبنتائج تجميلية ممتازة.",
+  "كسل العين": "علاج كسل العين يكون أكثر فعالية في سن الطفولة. نوفر برامج متكاملة تشمل تغطية العين، النظارات الطبية، والتمارين البصرية المتخصصة.",
+  "عدسات": "نوفر جميع أنواع العدسات اللاصقة (الطبية، التجميلية، والصلبة لعلاج القرنية المخروطية) مع فحص دقيق لضمان راحة وسلامة العين.",
+  "التهاب": "التهابات العين (الملتحمة، القزحية، أو الأجفان) تتطلب تشخيصاً دقيقاً لتحديد السبب (بكتيري، فيروسي، أو تحسسي). يرجى عدم استخدام قطرات الكورتيزون دون استشارة طبيبنا.",
+  "رمد": "الرمد الربيعي هو تحسس مزمن يصيب الأطفال غالباً. نقدم برامج علاجية للسيطرة على الحكة والاحمرار وحماية القرنية من المضاعفات.",
+  "جراحة تجميل": "نقدم عمليات تجميل الأجفان (ترهل الأجفان)، وعلاج انسداد القنوات الدمعية، وإصلاح إصابات محجر العين بأحدث التقنيات الجراحية.",
+  "تصوير": "نمتلك أحدث وحدات التصوير الطبي للعين: تصوير الشبكية الملون، تصوير العصب البصري (OCT)، تصوير تضاريس القرنية (Pentacam)، وتصوير الأوعية الدموية بالصبغة.",
+  "حقن": "نوفر خدمة حقن داخل الجسم الزجاجي (مثل لوسنتس، أفاستين، وإيليا) لعلاج ارتشاحات الماكيلا الناتجة عن السكري أو الشيخوخة.",
+  "فيمتو": "تقنية الفيمتو ليزك والفيمتو كاتاراكت متوفرة لدينا، وهي تضمن دقة متناهية وأماناً أعلى وسرعة في الاستشفاء مقارنة بالتقنيات التقليدية.",
+  "تثبيت": "عملية تثبيت القرنية (Cross-linking) هي الحل الأمثل لوقف تدهور القرنية المخروطية. نستخدم أحدث الأجهزة والمحاليل لضمان أفضل النتائج.",
+  "زراعة": "نقوم بعمليات زراعة القرنية (الكلية والطبقية) وزراعة العدسات داخل العين لتصحيح الدرجات العالية من قصر أو طول النظر.",
+  "أطفال": "لدينا عيادات متخصصة لطب عيون الأطفال لعلاج الحول، كسل العين، والمياه البيضاء الخلقية، وفحص الخدج.",
+  "مركز": "مستشفيات رؤية هي المراكز الرائدة في اليمن المتخصصة حصرياً في طب وجراحة العيون، مع كادر استشاري مؤهل تأهيلاً عالياً.",
+  "تأمين": "نتعامل مع معظم شركات التأمين الصحي الكبرى في اليمن. يرجى مراجعة قسم الاستقبال في الفرع للتأكد من شمولية تأمينك لخدماتنا."
 };
 
 function getLocalResponse(prompt: string): string | null {
@@ -185,7 +204,7 @@ export async function analyzeEyeImage(imageData: string, userInfo: { name: strin
           2. تحديد أي إصابات أو أعراض ظاهرة (مثل احمرار، مياه بيضاء، التهاب، إلخ).
           3. تقديم تقرير طبي مفصل باللغة العربية يتضمن التشخيص الأولي (الاسترشادي).
           4. تقديم نصائح طبية أولية.
-          5. التأكيد على ضرورة زيارة أقرب فرع لمستشفيات رؤية للفحص السريري.
+          6. تقدير حدة الإبصار (مثلاً 6/6 أو 6/12) ونسبة كفاءة الرؤية التقريبية بناءً على الملاحظات.
           
           يجب أن يكون الرد بتنسيق JSON يحتوي على الحقول المطلوبة.`
           }
@@ -201,9 +220,18 @@ export async function analyzeEyeImage(imageData: string, userInfo: { name: strin
             symptoms: { type: Type.ARRAY, items: { type: Type.STRING } },
             recommendations: { type: Type.ARRAY, items: { type: Type.STRING } },
             urgency: { type: Type.STRING },
-            detailedReport: { type: Type.STRING }
+            detailedReport: { type: Type.STRING },
+            visionEstimate: {
+              type: Type.OBJECT,
+              properties: {
+                acuity: { type: Type.STRING },
+                percentage: { type: Type.NUMBER },
+                status: { type: Type.STRING }
+              },
+              required: ["acuity", "percentage", "status"]
+            }
           },
-          required: ["diagnosis", "eyeParts", "symptoms", "recommendations", "urgency", "detailedReport"]
+          required: ["diagnosis", "eyeParts", "symptoms", "recommendations", "urgency", "detailedReport", "visionEstimate"]
         }
       }
     });

@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import "tailwindcss";
 
 :root {
+  --font-sans: 'Cairo', sans-serif;
   /* Override Tailwind v4 oklch variables with hex values for html2canvas compatibility */
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
