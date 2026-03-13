@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronUp, ChevronDown, MessageSquare, MessageCircle, Clock, Star, Baby, ArrowLeft,
   Mail, Headset, Globe, Heart, Camera, Upload, Download, FileText, QrCode,
   Code, Terminal, Copy, ExternalLink, Share2, Facebook, Twitter, Youtube,
-  Home, Maximize, Bell, Moon, Sun, Languages, User as UserIcon, LogIn, LogOut, Package
+  Home, Maximize, Bell, Moon, Sun, Languages, User as UserIcon, LogIn, LogOut, Package, Smartphone
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -254,6 +254,8 @@ const AppInfo = () => {
             </button>
             <a 
               href="https://github.com/alrassass/roaya-app/archive/refs/heads/main.zip"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 transition-all"
             >
               <Download size={14} />
@@ -1264,6 +1266,8 @@ function HomeHero({ onScan, onTabChange, t, theme, lang }: { onScan: () => void,
               </button>
               <a 
                 href="https://github.com/alrassass/roaya-app/archive/refs/heads/main.zip"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-12 py-6 bg-slate-900/40 backdrop-blur-xl text-white border border-white/10 rounded-3xl font-black text-xl hover:bg-slate-900/60 transition-all flex items-center gap-4 shadow-2xl hover:-translate-y-1 active:scale-95"
               >
                 <Download size={28} />
@@ -1769,6 +1773,32 @@ function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: 
           <section className={`p-8 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-slate-900 border-slate-900'} rounded-[2.5rem] text-white space-y-6 shadow-xl`}>
             <div className="flex items-center justify-between">
               <h4 className="text-xl font-bold flex items-center gap-3">
+                <Smartphone className="text-blue-400" />
+                {lang === 'ar' ? 'تحويل البرنامج إلى تطبيق (APK)' : 'Convert App to APK'}
+              </h4>
+              <div className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-[10px] font-bold uppercase tracking-widest border border-green-500/30">
+                Android Ready
+              </div>
+            </div>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              {lang === 'ar' 
+                ? 'تم تجهيز المشروع بمكتبة Capacitor. يمكنك تحويله إلى تطبيق أندرويد خلال دقائق باتباع الخطوات التالية:' 
+                : 'The project is equipped with Capacitor. You can convert it to an Android app in minutes by following these steps:'}
+            </p>
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
+              <ul className="text-xs space-y-2 list-decimal list-inside opacity-90">
+                <li>{lang === 'ar' ? 'حمل الكود المصدري كاملاً (ZIP).' : 'Download the full source code (ZIP).'}</li>
+                <li>{lang === 'ar' ? 'افتح المجلد في VS Code وشغل npm install.' : 'Open the folder in VS Code and run npm install.'}</li>
+                <li>{lang === 'ar' ? 'شغل npx cap add android.' : 'Run npx cap add android.'}</li>
+                <li>{lang === 'ar' ? 'شغل npm run build ثم npx cap copy.' : 'Run npm run build then npx cap copy.'}</li>
+                <li>{lang === 'ar' ? 'افتح المجلد في Android Studio واستخرج ملف APK.' : 'Open the folder in Android Studio and extract the APK file.'}</li>
+              </ul>
+            </div>
+          </section>
+
+          <section className={`p-8 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-slate-900 border-slate-900'} rounded-[2.5rem] text-white space-y-6 shadow-xl`}>
+            <div className="flex items-center justify-between">
+              <h4 className="text-xl font-bold flex items-center gap-3">
                 <Download className="text-blue-400" />
                 {lang === 'ar' ? 'تحميل الكود المصدري' : 'Download Source Code'}
               </h4>
@@ -1783,10 +1813,12 @@ function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: 
             </p>
             <a 
               href="https://github.com/alrassass/roaya-app/archive/main.zip"
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 shadow-lg"
             >
               <Download size={20} />
-              {lang === 'ar' ? 'رابط تحميل من GitHub' : 'Download from GitHub'}
+              {lang === 'ar' ? 'رابط تحميل من GitHub (خارجي)' : 'Download from GitHub (External)'}
             </a>
 
             <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-4">
