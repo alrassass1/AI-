@@ -148,7 +148,7 @@ ${record.analysis.diagnosis}
     if (!image) return;
     
     // Check if API key is set before starting
-    if (!isApiKeySet) {
+    if (!isApiKeySet()) {
       alert(isAr ? "عذراً، خدمات الذكاء الاصطناعي غير مفعلة حالياً. يرجى التأكد من إعدادات النظام." : "Sorry, AI services are not activated currently. Please check system settings.");
       return;
     }
@@ -259,6 +259,16 @@ ${record.analysis.diagnosis}
           // Ensure barcode is visible in clone
           const barcode = clonedDoc.getElementById('report-barcode');
           if (barcode) barcode.style.display = 'block';
+
+          // Fix for html2canvas oklch error in Tailwind v4
+          // We need to remove or replace oklch colors in stylesheets because html2canvas fails to parse them
+          const styleTags = Array.from(clonedDoc.getElementsByTagName('style'));
+          styleTags.forEach(tag => {
+            if (tag.innerHTML.includes('oklch')) {
+              // Replace oklch(...) with a safe fallback color (e.g., blue-600 hex)
+              tag.innerHTML = tag.innerHTML.replace(/oklch\([^)]+\)/g, '#2563eb');
+            }
+          });
         }
       });
       
@@ -689,8 +699,8 @@ ${record.analysis.diagnosis}
                     <Eye size={32} />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-black text-[#0f172a]">مستشفيات رؤية</h1>
-                    <p className="text-xs text-[#2563eb] font-bold uppercase tracking-widest">تقرير الفحص الذكي (AI)</p>
+                    <h1 className="text-2xl font-black text-[#0f172a] font-bold">مستشفيات رؤية</h1>
+                    <p className="text-xs text-[#2563eb] font-black uppercase tracking-widest">تقرير الفحص الذكي (AI)</p>
                   </div>
                 </div>
                 <div className="text-left">
@@ -703,20 +713,20 @@ ${record.analysis.diagnosis}
               {/* Patient Info Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 bg-[#f8fafc] p-6 rounded-3xl border border-[#f1f5f9]">
                 <div>
-                  <p className="text-[10px] font-bold text-[#94a3b8] uppercase mb-1">اسم المريض</p>
-                  <p className="text-sm font-bold text-[#0f172a]">{userInfo.name}</p>
+                  <p className="text-[10px] font-black text-[#94a3b8] uppercase mb-1">اسم المريض</p>
+                  <p className="text-sm font-black text-[#0f172a]">{userInfo.name}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-[#94a3b8] uppercase mb-1">رقم الهاتف</p>
-                  <p className="text-sm font-bold text-[#0f172a]" dir="ltr">{userInfo.phone}</p>
+                  <p className="text-[10px] font-black text-[#94a3b8] uppercase mb-1">رقم الهاتف</p>
+                  <p className="text-sm font-black text-[#0f172a]" dir="ltr">{userInfo.phone}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-[#94a3b8] uppercase mb-1">العمر</p>
-                  <p className="text-sm font-bold text-[#0f172a]">{userInfo.age} سنة</p>
+                  <p className="text-[10px] font-black text-[#94a3b8] uppercase mb-1">العمر</p>
+                  <p className="text-sm font-black text-[#0f172a]">{userInfo.age} سنة</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-[#94a3b8] uppercase mb-1">رقم الملف</p>
-                  <p className="text-sm font-bold text-[#2563eb]">{fileNumber}</p>
+                  <p className="text-[10px] font-black text-[#94a3b8] uppercase mb-1">رقم الملف</p>
+                  <p className="text-sm font-black text-[#2563eb]">{fileNumber}</p>
                 </div>
               </div>
 
@@ -751,40 +761,40 @@ ${record.analysis.diagnosis}
                   <div className="bg-[#f8fafc] p-6 rounded-3xl border border-[#f1f5f9] space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-bold text-[#0f172a] flex items-center gap-2">
-                        <Activity className="text-blue-600" size={16} />
+                        <Activity className="text-[#2563eb]" size={16} />
                         نتائج فحص النظر التقديرية
                       </h4>
-                      <span className="px-3 py-1 bg-blue-600 text-white text-[10px] font-bold rounded-full uppercase">AI Estimate</span>
+                      <span className="px-3 py-1 bg-[#2563eb] text-[#ffffff] text-[10px] font-bold rounded-full uppercase">AI Estimate</span>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">حدة الإبصار (تقديرية)</p>
+                        <p className="text-[10px] font-bold text-[#94a3b8] uppercase">حدة الإبصار (تقديرية)</p>
                         <div className="flex items-end gap-1">
-                          <span className="text-2xl font-black text-slate-900">{analysis.visionEstimate?.acuity || '6/6'}</span>
-                          <span className="text-[10px] text-slate-500 mb-1">{analysis.visionEstimate?.status || 'طبيعي'}</span>
+                          <span className="text-2xl font-black text-[#0f172a]">{analysis.visionEstimate?.acuity || '6/6'}</span>
+                          <span className="text-[10px] text-[#64748b] mb-1">{analysis.visionEstimate?.status || 'طبيعي'}</span>
                         </div>
-                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-[#e2e8f0] rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-green-500 rounded-full transition-all duration-1000" 
+                            className="h-full bg-[#22c55e] rounded-full transition-all duration-1000" 
                             style={{ width: `${analysis.visionEstimate?.percentage || 100}%` }}
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">نسبة كفاءة الرؤية</p>
+                        <p className="text-[10px] font-bold text-[#94a3b8] uppercase">نسبة كفاءة الرؤية</p>
                         <div className="flex items-end gap-1">
-                          <span className="text-2xl font-black text-slate-900">{analysis.visionEstimate?.percentage || 98}%</span>
-                          <span className="text-[10px] text-slate-500 mb-1">{analysis.visionEstimate?.status || 'ممتاز'}</span>
+                          <span className="text-2xl font-black text-[#0f172a]">{analysis.visionEstimate?.percentage || 98}%</span>
+                          <span className="text-[10px] text-[#64748b] mb-1">{analysis.visionEstimate?.status || 'ممتاز'}</span>
                         </div>
-                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-[#e2e8f0] rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-blue-500 rounded-full transition-all duration-1000" 
+                            className="h-full bg-[#3b82f6] rounded-full transition-all duration-1000" 
                             style={{ width: `${analysis.visionEstimate?.percentage || 98}%` }}
                           />
                         </div>
                       </div>
                     </div>
-                    <p className="text-[9px] text-slate-400 italic">
+                    <p className="text-[9px] text-[#94a3b8] italic">
                       * هذه الأرقام تقديرية بناءً على تحليل الذكاء الاصطناعي للصورة والبيانات المقدمة، ولا تعتبر بديلاً عن فحص "لوحة سنيلين" في العيادة.
                     </p>
                   </div>
@@ -890,6 +900,24 @@ ${record.analysis.diagnosis}
                   <p className="text-slate-400 text-sm">يمكنك تحميل نسخة PDF من التقرير للرجوع إليها أو عرضها على الطبيب عند زيارة المستشفى.</p>
                 </div>
                 <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={() => {
+                      const scanRecord = {
+                        id: Date.now().toString(),
+                        timestamp: new Date().toISOString(),
+                        userInfo: { ...userInfo },
+                        analysis: analysis,
+                        image: image!,
+                        fileNumber
+                      };
+                      saveScanToHistory(scanRecord);
+                      alert(isAr ? "تم حفظ الفحص في السجل بنجاح!" : "Scan saved to history successfully!");
+                    }}
+                    className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20"
+                  >
+                    <History size={20} />
+                    {isAr ? 'حفظ في السجل الطبي' : 'Save to Medical Record'}
+                  </button>
                   <button 
                     onClick={downloadPdf}
                     disabled={isGeneratingPdf}

@@ -1,9 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&display=swap');
 @import "tailwindcss";
 
-:root {
+@theme {
   --font-sans: 'Cairo', sans-serif;
-  /* Override Tailwind v4 oklch variables with hex values for html2canvas compatibility */
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -14,6 +13,7 @@
   --color-slate-900: #0f172a;
   --color-blue-50: #eff6ff;
   --color-blue-100: #dbeafe;
+  --color-blue-500: #3b82f6;
   --color-blue-600: #2563eb;
   --color-red-50: #fef2f2;
   --color-red-100: #fee2e2;
@@ -24,10 +24,14 @@
   --color-amber-700: #b45309;
   --color-green-50: #f0fdf4;
   --color-green-100: #dcfce7;
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
   --color-green-700: #15803d;
-  --color-white: #ffffff;
-  --color-black: #000000;
-  --color-transparent: transparent;
+}
+
+:root {
+  /* Accessibility: Bolder default weight */
+  font-weight: 500;
   --tw-border-color: #e2e8f0;
 }
 

@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronUp, ChevronDown, MessageSquare, MessageCircle, Clock, Star, Baby, ArrowLeft,
   Mail, Headset, Globe, Heart, Camera, Upload, Download, FileText, QrCode,
   Code, Terminal, Copy, ExternalLink, Share2, Facebook, Twitter, Youtube,
-  Home, Maximize, Bell, Moon, Sun, Languages, User as UserIcon, LogIn, LogOut
+  Home, Maximize, Bell, Moon, Sun, Languages, User as UserIcon, LogIn, LogOut, Package
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -39,7 +39,7 @@ const TRANSLATIONS = {
     welcome_to: 'مرحباً بك في : رؤية لطب و جراحة العيون والشبكية AI',
     share_app: 'مشاركة البرنامج',
     scan_to_open: 'امسح للفتح',
-    app_title: 'برنامج مستشفيات رؤية الذكي',
+    app_title: 'برنامج مستشفيات رؤية الذكي (AI)',
     app_desc: 'منصة متكاملة تقدم خدمات الاستشارة الطبية الفورية، فحص العين بالذكاء الاصطناعي، وحجز المواعيد في جميع فروعنا.',
     notifications: 'الإشعارات',
     no_notifications: 'لا توجد إشعارات جديدة حالياً.',
@@ -252,6 +252,13 @@ const AppInfo = () => {
               {isSharing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
               مشاركة البرنامج
             </button>
+            <a 
+              href="https://github.com/alrassass/roaya-app/archive/refs/heads/main.zip"
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 transition-all"
+            >
+              <Download size={14} />
+              تحميل البرنامج
+            </a>
             <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-[10px] border border-blue-100">
               <QrCode size={14} />
               امسح للفتح
@@ -639,7 +646,7 @@ export default function App() {
               icon={<Code size={18} />}
               label={t.developers}
             />
-
+            
             <div className="pt-6 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
               الخدمات السريعة
             </div>
@@ -960,6 +967,9 @@ export default function App() {
                   theme={theme}
                   lang={lang}
                 />
+                <div className="pt-12">
+                  <AppInfo />
+                </div>
               </div>
             </div>
           ) : activeTab === 'chat' ? (
@@ -1003,7 +1013,29 @@ export default function App() {
                 )}
                 {activeTab === 'branches' && <BranchesView onTabChange={setActiveTab} onScan={() => setActiveTab('ai_scan')} t={t} theme={theme} lang={lang} />}
                 {activeTab === 'about' && <AboutView onTabChange={setActiveTab} onScan={() => setActiveTab('ai_scan')} t={t} theme={theme} lang={lang} />}
-                {activeTab === 'developers' && <DevelopersView onTabChange={setActiveTab} onScan={() => setActiveTab('ai_scan')} t={t} theme={theme} lang={lang} />}
+                {activeTab === 'developers' && (
+                  userRole === 'admin' ? (
+                    <DevelopersView onTabChange={setActiveTab} onScan={() => setActiveTab('ai_scan')} t={t} theme={theme} lang={lang} />
+                  ) : (
+                    <div className="text-center py-12 space-y-6">
+                      <div className="w-20 h-20 bg-red-100 text-red-600 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
+                        <Shield size={40} />
+                      </div>
+                      <h3 className="text-2xl font-black text-slate-900">{lang === 'ar' ? 'منطقة محظورة' : 'Restricted Area'}</h3>
+                      <p className="text-slate-500 font-bold max-w-md mx-auto">
+                        {lang === 'ar' 
+                          ? 'عذراً، هذه الصفحة مخصصة للمطورين والمسؤولين فقط. يرجى تسجيل الدخول بحساب المسؤول للوصول.' 
+                          : 'Sorry, this page is for developers and administrators only. Please log in with an admin account to access.'}
+                      </p>
+                      <button 
+                        onClick={() => setActiveTab('home')}
+                        className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200"
+                      >
+                        {lang === 'ar' ? 'العودة للرئيسية' : 'Back to Home'}
+                      </button>
+                    </div>
+                  )
+                )}
                 {activeTab === 'contact' && <ContactUsView onTabChange={setActiveTab} onScan={() => setActiveTab('ai_scan')} t={t} theme={theme} lang={lang} />}
               </div>
             </div>
@@ -1208,14 +1240,14 @@ function HomeHero({ onScan, onTabChange, t, theme, lang }: { onScan: () => void,
               {lang === 'ar' ? 'تقنية الذكاء الاصطناعي الثورية' : 'Revolutionary AI Technology'}
             </motion.div>
             <div className="space-y-6">
-              <h2 className="text-5xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight drop-shadow-2xl">
+              <h2 className="text-5xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight drop-shadow-2xl font-bold">
                 {lang === 'ar' ? 'فحص الشبكية السريع' : 'Fast Retina Scan'}
               </h2>
-              <p className="text-xl lg:text-2xl text-blue-50 font-medium max-w-xl leading-relaxed opacity-95 drop-shadow-lg">
+              <p className="text-xl lg:text-2xl text-blue-50 font-bold max-w-xl leading-relaxed opacity-95 drop-shadow-lg">
                 {lang === 'ar' ? 'احصل على تقرير أولي دقيق لحالة عينيك في أقل من دقيقة واحدة باستخدام أحدث تقنيات الذكاء الاصطناعي.' : 'Get an accurate preliminary report of your eye condition in less than a minute using the latest AI technology.'}
               </p>
             </div>
-            <div className="flex flex-wrap gap-6">
+            <div className="flex flex-wrap gap-4 lg:gap-6">
               <button 
                 onClick={onScan}
                 className="px-12 py-6 bg-white text-slate-900 rounded-3xl font-black text-xl hover:bg-blue-50 transition-all flex items-center gap-4 shadow-2xl hover:-translate-y-1 active:scale-95 group/btn"
@@ -1230,6 +1262,13 @@ function HomeHero({ onScan, onTabChange, t, theme, lang }: { onScan: () => void,
                 <MessageSquare size={28} />
                 {t.chat}
               </button>
+              <a 
+                href="https://github.com/alrassass/roaya-app/archive/refs/heads/main.zip"
+                className="px-12 py-6 bg-slate-900/40 backdrop-blur-xl text-white border border-white/10 rounded-3xl font-black text-xl hover:bg-slate-900/60 transition-all flex items-center gap-4 shadow-2xl hover:-translate-y-1 active:scale-95"
+              >
+                <Download size={28} />
+                {lang === 'ar' ? 'تحميل البرنامج' : 'Download App'}
+              </a>
             </div>
           </div>
         </div>
@@ -1626,19 +1665,50 @@ function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: 
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
-      <div className="space-y-3">
-        <div className={`inline-flex items-center gap-2 px-3 py-1 ${theme === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'} rounded-full text-xs font-bold uppercase tracking-wider`}>
-          <Terminal size={12} />
-          {lang === 'ar' ? 'أدوات المطورين' : 'Developer Tools'}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-3">
+          <div className={`inline-flex items-center gap-2 px-3 py-1 ${theme === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'} rounded-full text-xs font-bold uppercase tracking-wider`}>
+            <Terminal size={12} />
+            {lang === 'ar' ? 'أدوات المطورين والمسؤولين' : 'Developer & Admin Tools'}
+          </div>
+          <h2 className={`text-4xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'} tracking-tight`}>{t.developers}</h2>
+          <p className="text-slate-500 text-lg max-w-2xl leading-relaxed">
+            {lang === 'ar' ? 'إدارة البرنامج، تصدير الكود، وتفعيل ميزات الذكاء الاصطناعي المتقدمة.' : 'Manage the program, export code, and activate advanced AI features.'}
+          </p>
         </div>
-        <h2 className={`text-4xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'} tracking-tight`}>{t.developers}</h2>
-        <p className="text-slate-500 text-lg max-w-2xl leading-relaxed">
-          {lang === 'ar' ? 'يمكنك الآن تضمين برنامج مستشفيات رؤية الذكي في موقعك الإلكتروني أو مدونة وورد بريس بسهولة تامة.' : 'You can now easily embed the Roaya Hospital Smart Program into your website or WordPress blog.'}
-        </p>
+        <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center p-3 shadow-xl border border-slate-100">
+          <img src={ROAYA_LOGO} alt="Roaya Logo" className="w-full h-full object-contain" />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
+          {/* Export Section */}
+          <section className={`p-8 ${theme === 'dark' ? 'bg-blue-600' : 'bg-blue-600'} rounded-[2.5rem] text-white space-y-6 shadow-2xl relative overflow-hidden group`}>
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+              <Package size={120} />
+            </div>
+            <div className="relative z-10 space-y-4">
+              <h3 className="text-2xl font-black flex items-center gap-3">
+                <Share2 size={24} />
+                {lang === 'ar' ? 'تصدير ونشر البرنامج' : 'Export & Deploy App'}
+              </h3>
+              <p className="text-blue-50 text-sm font-bold leading-relaxed">
+                {lang === 'ar' 
+                  ? 'للحصول على نسخة احترافية جاهزة للرفع على خادمك الخاص (مثل Google Cloud أو Hostinger)، يرجى استخدام ميزة "Export" الموجودة في قائمة الإعدادات العلوية للمنصة.' 
+                  : 'To get a professional version ready for upload to your private server (like Google Cloud or Hostinger), please use the "Export" feature in the platform\'s top settings menu.'}
+              </p>
+              <div className="p-4 bg-white/10 rounded-2xl border border-white/20 space-y-3">
+                <p className="text-xs font-black uppercase tracking-widest">{lang === 'ar' ? 'خطوات التصدير:' : 'Export Steps:'}</p>
+                <ul className="text-xs space-y-2 list-decimal list-inside opacity-90">
+                  <li>{lang === 'ar' ? 'افتح قائمة "Settings" في أعلى يمين المحرر.' : 'Open the "Settings" menu in the top right of the editor.'}</li>
+                  <li>{lang === 'ar' ? 'اختر "Export to GitHub" أو "Download ZIP".' : 'Choose "Export to GitHub" or "Download ZIP".'}</li>
+                  <li>{lang === 'ar' ? 'ستحصل على كود نظيف واحترافي جاهز للتشغيل.' : 'You will get clean, professional code ready to run.'}</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
           <div className={`${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-slate-900 border-slate-100'} rounded-[2.5rem] p-8 text-white space-y-6 shadow-2xl border`}>
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold flex items-center gap-3">
@@ -1696,7 +1766,43 @@ function DevelopersView({ onTabChange, onScan, t, theme, lang }: { onTabChange: 
             </div>
           </div>
 
-          {/* Removed developer sections */}
+          <section className={`p-8 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-slate-900 border-slate-900'} rounded-[2.5rem] text-white space-y-6 shadow-xl`}>
+            <div className="flex items-center justify-between">
+              <h4 className="text-xl font-bold flex items-center gap-3">
+                <Download className="text-blue-400" />
+                {lang === 'ar' ? 'تحميل الكود المصدري' : 'Download Source Code'}
+              </h4>
+              <div className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-[10px] font-bold uppercase tracking-widest border border-blue-500/30">
+                GitHub ZIP
+              </div>
+            </div>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              {lang === 'ar' 
+                ? 'يمكنك تحميل حزمة البرنامج من مستودع GitHub. يرجى ملاحظة أن هذا الرابط يتطلب أن يكون المستودع عاماً أو لديك صلاحية الوصول إليه.' 
+                : 'You can download the program package from the GitHub repository. Please note that this link requires the repository to be public or for you to have access.'}
+            </p>
+            <a 
+              href="https://github.com/alrassass/roaya-app/archive/main.zip"
+              className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 shadow-lg"
+            >
+              <Download size={20} />
+              {lang === 'ar' ? 'رابط تحميل من GitHub' : 'Download from GitHub'}
+            </a>
+
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-lg flex items-center justify-center">
+                  <Terminal size={16} />
+                </div>
+                <h5 className="font-bold text-sm">{lang === 'ar' ? 'تنبيه هام للمسؤولين' : 'Important Admin Note'}</h5>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                {lang === 'ar' 
+                  ? 'عند تشغيل البرنامج على استضافة خارجية، يجب إضافة مفتاح GEMINI_API_KEY في إعدادات البيئة لضمان عمل ميزات الذكاء الاصطناعي.' 
+                  : 'When running the program on external hosting, you must add the GEMINI_API_KEY in the environment settings to ensure AI features work.'}
+              </p>
+            </div>
+          </section>
         </div>
 
       <div className="space-y-6">
@@ -1740,7 +1846,7 @@ function AboutView({ onTabChange, onScan, t, theme, lang }: { onTabChange: (tab:
         <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent' : 'bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent'} flex items-end p-10`}>
           <div className="space-y-2">
             <div className="flex items-center gap-4 mb-2">
-              <img src="https://roayahospital.com/wp-content/uploads/2023/10/logo-roaya.png" alt="Logo" className="h-12 bg-white p-2 rounded-xl" />
+              <img src={ROAYA_LOGO} alt="Logo" className="h-12 bg-white p-2 rounded-xl" />
             </div>
             <h2 className="text-4xl font-black text-white tracking-tight">{t.about}</h2>
             <p className="text-blue-400 font-bold text-xl">{lang === 'ar' ? 'رؤية أوضح لحياة أفضل منذ عام 2004' : 'Clearer Vision for a Better Life since 2004'}</p>
@@ -1793,54 +1899,6 @@ function AboutView({ onTabChange, onScan, t, theme, lang }: { onTabChange: (tab:
             </div>
           </div>
 
-          <section className={`p-8 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-slate-900 border-slate-900'} rounded-[2.5rem] text-white space-y-6 shadow-xl`}>
-            <div className="flex items-center justify-between">
-              <h4 className="text-xl font-bold flex items-center gap-3">
-                <Download className="text-blue-400" />
-                {lang === 'ar' ? 'تصدير ونشر البرنامج' : 'Export & Deploy Program'}
-              </h4>
-              <div className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-[10px] font-bold uppercase tracking-widest border border-blue-500/30">
-                Standalone Ready
-              </div>
-            </div>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              {lang === 'ar' 
-                ? 'هذا البرنامج مصمم ليعمل بشكل مستقل على أي استضافة خارجية (مثل Namecheap أو HostGator). يمكنك تصدير الكود المصدري بالكامل ونقله إلى خادمك الخاص.' 
-                : 'This program is designed to run independently on any external hosting (like Namecheap or HostGator). You can export the full source code and move it to your own server.'}
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-2">
-                <p className="text-xs font-bold text-blue-400">{lang === 'ar' ? 'خطوات التصدير:' : 'Export Steps:'}</p>
-                <ul className="text-[10px] text-slate-400 space-y-1 list-disc list-inside">
-                  <li>{lang === 'ar' ? 'من القائمة العلوية، اختر "Settings".' : 'From the top menu, select "Settings".'}</li>
-                  <li>{lang === 'ar' ? 'اختر "Export to GitHub" أو "Download ZIP".' : 'Choose "Export to GitHub" or "Download ZIP".'}</li>
-                  <li>{lang === 'ar' ? 'قم برفع الملفات إلى استضافتك الخاصة.' : 'Upload the files to your own hosting.'}</li>
-                </ul>
-              </div>
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-2">
-                <p className="text-xs font-bold text-blue-400">{lang === 'ar' ? 'متطلبات التشغيل:' : 'Requirements:'}</p>
-                <ul className="text-[10px] text-slate-400 space-y-1 list-disc list-inside">
-                  <li>{lang === 'ar' ? 'استضافة تدعم Node.js أو ملفات Static.' : 'Hosting that supports Node.js or Static files.'}</li>
-                  <li>{lang === 'ar' ? 'إضافة مفتاح API في ملف .env' : 'Add API Key in .env file.'}</li>
-                  <li>{lang === 'ar' ? 'ربط الدومين الخاص بك.' : 'Connect your custom domain.'}</li>
-                </ul>
-              </div>
-            </div>
-            <button 
-              onClick={() => {
-                const subject = lang === 'ar' ? 'طلب تصدير برنامج مستشفيات رؤية' : 'Roaya Hospital App Export Request';
-                const body = lang === 'ar' 
-                  ? 'أرغب في الحصول على نسخة كاملة من الكود المصدري لنقلها إلى استضافة خارجية.' 
-                  : 'I would like to get a full copy of the source code to move it to external hosting.';
-                window.open(`mailto:alrassass9@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
-              }}
-              className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-600/20"
-            >
-              <Download size={20} />
-              {lang === 'ar' ? 'تحميل ملفات المشروع (ZIP)' : 'Download Project Files (ZIP)'}
-            </button>
-          </section>
-
           <section className={`p-8 ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-900'} rounded-[2.5rem] text-white space-y-6`}>
             <h4 className="text-xl font-bold flex items-center gap-3">
               <Sparkles className="text-blue-400" />
@@ -1856,39 +1914,7 @@ function AboutView({ onTabChange, onScan, t, theme, lang }: { onTabChange: (tab:
             </div>
           </section>
 
-          {/* Download App Package Section */}
-          <section className={`p-8 ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} rounded-[2.5rem] border shadow-sm space-y-6`}>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
-                <Download size={24} />
-              </div>
-              <div>
-                <h4 className={`font-bold text-xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{t.download_package}</h4>
-                <p className="text-slate-500 text-sm">{t.download_desc}</p>
-              </div>
-            </div>
-            <div className="flex flex-col md:flex-row gap-4">
-              <button 
-                onClick={() => {
-                  alert(lang === 'ar' ? 'جاري تحضير حزمة التطبيق... يرجى الانتظار.' : 'Preparing app package... please wait.');
-                  // Simulate download
-                  setTimeout(() => {
-                    window.open('https://github.com/alrassass/roaya-app/archive/refs/heads/main.zip', '_blank');
-                  }, 2000);
-                }}
-                className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-3"
-              >
-                <Download size={20} />
-                {t.download_package}
-              </button>
-              <div className="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
-                <Shield size={20} className="text-green-600" />
-                <p className="text-[10px] text-slate-500 font-bold leading-tight">
-                  {lang === 'ar' ? 'الحزمة تحتوي على كافة الملفات والمفاتيح اللازمة للتشغيل الفوري.' : 'The package contains all files and keys necessary for immediate operation.'}
-                </p>
-              </div>
-            </div>
-          </section>
+
         </div>
 
         <div className="space-y-6">
